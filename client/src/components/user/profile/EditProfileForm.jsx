@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { userService } from "@/services/userService";
 
 const SKIN_TYPES = ["normal", "oily", "dry", "combination", "sensitive"];
@@ -9,42 +10,45 @@ const GENDERS = ["male", "female", "other"];
 
 const EditProfileForm = ({ user }) => {
   const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    full_name: user.full_name || "",
-    phone: user.phone || "",
-    gender: user.gender || "",
-    skin_type: user.skin_type || "",
-    city: user.address?.city || "",
-    province: user.address?.province || "",
-  });
-
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      full_name: user?.full_name || "",
+      phone: user?.phone || "",
+      gender: user?.gender || "",
+      skin_type: user?.skin_type || "",
+      city: user?.address?.city || "",
+      province: user?.address?.province || "",
+    },
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setIsLoading(true);
     setMessage(null);
 
     try {
       const payload = {
-        full_name: formData.full_name,
-        phone: formData.phone,
-        gender: formData.gender,
-        skin_type: formData.skin_type || null,
+        full_name: data.full_name,
+        phone: data.phone,
+        gender: data.gender,
+        skin_type: data.skin_type || null,
         address:
-          formData.city && formData.province
-            ? { city: formData.city, province: formData.province }
+          data.city && data.province
+            ? { city: data.city, province: data.province }
             : null,
       };
 
       await userService.updateProfile(payload);
+      
+      // Notify AppNavbar to sync new info (like name changes) instantly
+      window.dispatchEvent(new Event("userProfileUpdated"));
+
       setMessage({ type: "success", text: "Profile updated successfully!" });
       router.refresh();
     } catch (error) {
@@ -55,7 +59,7 @@ const EditProfileForm = ({ user }) => {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-6">
       <h2 className="text-lg font-semibold text-slate-900">
         Personal Information
       </h2>
@@ -63,7 +67,8 @@ const EditProfileForm = ({ user }) => {
         Update your name, contact details, and skin type.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4" noValidate>
+        {/* Full Name */}
         <div>
           <label
             htmlFor="full_name"
@@ -73,15 +78,21 @@ const EditProfileForm = ({ user }) => {
           </label>
           <input
             id="full_name"
-            name="full_name"
             type="text"
-            value={formData.full_name}
-            onChange={handleChange}
-            required
+            {...register("full_name", {
+              required: "Full name is required",
+              minLength: { value: 2, message: "Name is too short" },
+            })}
             className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
           />
+          {errors.full_name && (
+            <p className="mt-1.5 text-xs font-medium text-red-500">
+              {errors.full_name.message}
+            </p>
+          )}
         </div>
 
+        {/* Phone Number */}
         <div>
           <label
             htmlFor="phone"
@@ -91,14 +102,24 @@ const EditProfileForm = ({ user }) => {
           </label>
           <input
             id="phone"
-            name="phone"
             type="tel"
-            value={formData.phone}
-            onChange={handleChange}
+            {...register("phone", {
+              required: "Phone number is required",
+              pattern: {
+                value: /^[0-9+\-\s()]+$/,
+                message: "Invalid phone number format",
+              },
+            })}
             className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
           />
+          {errors.phone && (
+            <p className="mt-1.5 text-xs font-medium text-red-500">
+              {errors.phone.message}
+            </p>
+          )}
         </div>
 
+        {/* Gender & Skin Type */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label
@@ -109,9 +130,7 @@ const EditProfileForm = ({ user }) => {
             </label>
             <select
               id="gender"
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
+              {...register("gender", { required: "Gender is required" })}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             >
               <option value="">Select gender</option>
@@ -121,6 +140,11 @@ const EditProfileForm = ({ user }) => {
                 </option>
               ))}
             </select>
+            {errors.gender && (
+              <p className="mt-1.5 text-xs font-medium text-red-500">
+                {errors.gender.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -132,9 +156,7 @@ const EditProfileForm = ({ user }) => {
             </label>
             <select
               id="skin_type"
-              name="skin_type"
-              value={formData.skin_type}
-              onChange={handleChange}
+              {...register("skin_type")}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             >
               <option value="">Select skin type</option>
@@ -147,6 +169,7 @@ const EditProfileForm = ({ user }) => {
           </div>
         </div>
 
+        {/* City & Province */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label
@@ -157,10 +180,8 @@ const EditProfileForm = ({ user }) => {
             </label>
             <input
               id="city"
-              name="city"
               type="text"
-              value={formData.city}
-              onChange={handleChange}
+              {...register("city")}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             />
           </div>
@@ -174,15 +195,14 @@ const EditProfileForm = ({ user }) => {
             </label>
             <input
               id="province"
-              name="province"
               type="text"
-              value={formData.province}
-              onChange={handleChange}
+              {...register("province")}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             />
           </div>
         </div>
 
+        {/* Feedback message */}
         {message && (
           <p
             role="alert"

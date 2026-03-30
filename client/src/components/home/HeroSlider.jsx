@@ -1,12 +1,5 @@
 "use client";
 
-// ─────────────────────────────────────────────────────────────
-// HeroSlider — 3-slide full-width hero using Swiper.js
-// Each slide has a background image (Unsplash), an overlay,
-// a headline, subtitle, and action buttons.
-// ─────────────────────────────────────────────────────────────
-
-// Swiper core styles (required)
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -17,58 +10,68 @@ import { Autoplay, Pagination, Navigation, EffectFade } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarCheck, ShoppingBag, ArrowRight, Sparkles } from "lucide-react";
-import { DOCTORS_ROUTE, PRODUCT_ROUTE, REGISTER_ROUTE } from "@/constants/routes";
+import {
+  DOCTORS_ROUTE,
+  PRODUCT_ROUTE,
+  REGISTER_ROUTE,
+} from "@/constants/routes";
 
-// ── Slide data ───────────────────────────────────────────────
-// Each slide has: image URL, badge, headline, highlight (colored word),
-// subtitle, and up to 2 CTA buttons.
 const SLIDES = [
   {
     id: 1,
-    // Skincare products flat-lay
-    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80",
-    badge: "✨ Premium Skincare",
+
+    image:
+      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80",
+    badge: "Premium Skincare",
     headline: "Glow Naturally with",
     highlight: "Our Skincare Products",
     subtitle:
       "Explore dermatologist-recommended cleansers, serums, and moisturizers tailored to every skin type.",
     primaryCta: { label: "Shop Now", href: PRODUCT_ROUTE, icon: ShoppingBag },
     secondaryCta: { label: "Learn More", href: PRODUCT_ROUTE },
-    // Overlay tint — dark teal tone
+
     overlay: "from-[#0D4F52]/80 via-[#0D4F52]/50 to-transparent",
   },
   {
     id: 2,
-    // Doctor / dermatologist consultation
-    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
-    badge: "🩺 Certified Dermatologists",
+
+    image:
+      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
+    badge: "Certified Dermatologists",
     headline: "Consult",
     highlight: "Certified Dermatologists",
     subtitle:
       "Book a video or in-person consultation with a verified dermatologist in just a few clicks.",
-    primaryCta: { label: "Book Appointment", href: DOCTORS_ROUTE, icon: CalendarCheck },
+    primaryCta: {
+      label: "Book Appointment",
+      href: DOCTORS_ROUTE,
+      icon: CalendarCheck,
+    },
     secondaryCta: { label: "View Doctors", href: DOCTORS_ROUTE },
     overlay: "from-[#0A3D3F]/85 via-[#0A3D3F]/55 to-transparent",
   },
   {
     id: 3,
-    // Wellness / skincare routine
-    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1600&q=80",
-    badge: "🌿 All-in-One Platform",
+
+    image:
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1600&q=80",
+    badge: " All-in-One Platform",
     headline: "Personalized",
     highlight: "Skin Care Solutions",
     subtitle:
       "Get expert medical advice and the right products together — your complete skin care journey starts here.",
-    primaryCta: { label: "Get Started Free", href: REGISTER_ROUTE, icon: Sparkles },
+    primaryCta: {
+      label: "Get Started Free",
+      href: REGISTER_ROUTE,
+      icon: Sparkles,
+    },
     secondaryCta: { label: "See How It Works", href: "/" },
     overlay: "from-[#0F5E62]/80 via-[#0F5E62]/50 to-transparent",
   },
 ];
 
-// ── Single slide content ─────────────────────────────────────
 const SlideContent = ({ slide }) => (
   <div className="relative h-[540px] w-full md:h-[620px]">
-    {/* Background image */}
     <Image
       src={slide.image}
       alt={slide.headline}
@@ -78,32 +81,28 @@ const SlideContent = ({ slide }) => (
       sizes="100vw"
     />
 
-    {/* Dark gradient overlay so text is always readable */}
     <div className={`absolute inset-0 bg-gradient-to-r ${slide.overlay}`} />
-    {/* Extra bottom fade for the stats bar */}
+
     <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 to-transparent" />
 
-    {/* Slide text content */}
     <div className="absolute inset-0 flex items-center">
       <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
         <div className="max-w-xl">
-          {/* Badge pill */}
           <span className="mb-5 inline-flex items-center rounded-full border border-white/30 bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-sm">
             {slide.badge}
           </span>
 
-          {/* Headline */}
           <h2 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-white md:text-5xl lg:text-[3.2rem]">
             {slide.headline}{" "}
             <span className="text-[#F5E6B3]">{slide.highlight}</span>
           </h2>
 
-          {/* Subtitle */}
+   
           <p className="mt-4 max-w-md text-base leading-7 text-white/80">
             {slide.subtitle}
           </p>
 
-          {/* CTA buttons */}
+      
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href={slide.primaryCta.href}
@@ -129,7 +128,6 @@ const SlideContent = ({ slide }) => (
   </div>
 );
 
-// ── Stats bar shown below the slides ────────────────────────
 const StatItem = ({ value, label }) => (
   <div className="text-center">
     <p className="text-2xl font-extrabold text-[#1D7D82]">{value}</p>
@@ -137,12 +135,11 @@ const StatItem = ({ value, label }) => (
   </div>
 );
 
-// ── Main HeroSlider component ────────────────────────────────
 const HeroSlider = () => (
   <section>
     <Swiper
       modules={[Autoplay, Pagination, Navigation, EffectFade]}
-      effect="fade"               // Smooth cross-fade between slides
+      effect="fade" 
       autoplay={{ delay: 5000, disableOnInteraction: false }}
       pagination={{ clickable: true }}
       navigation={true}
@@ -156,7 +153,7 @@ const HeroSlider = () => (
       ))}
     </Swiper>
 
-    {/* Stats bar */}
+   
     <div className="border-b border-slate-100 bg-white">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-around gap-6 px-6 py-5">
         <StatItem value="500+" label="Verified Doctors" />
@@ -169,7 +166,7 @@ const HeroSlider = () => (
       </div>
     </div>
 
-    {/* Swiper custom styles — arrows and pagination dots */}
+  
     <style>{`
       .hero-swiper .swiper-button-next,
       .hero-swiper .swiper-button-prev {

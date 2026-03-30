@@ -6,6 +6,7 @@ export const DOCTORS_ROUTE = "/doctors";
 export const USER_DASHBOARD_ROUTE = "/dashboard";
 export const USER_PROFILE_ROUTE = "/dashboard/profile";
 export const DOCTOR_DASHBOARD_ROUTE = "/doctor/dashboard";
+export const DOCTOR_PROFILE_ROUTE = "/doctor/dashboard/profile";
 
 // Admin Routes
 export const ADMIN_DASHBOARD_ROUTE = "/admin";
@@ -23,6 +24,7 @@ export const ROUTES = {
 	USER_DASHBOARD: USER_DASHBOARD_ROUTE,
 	USER_PROFILE: USER_PROFILE_ROUTE,
 	DOCTOR_DASHBOARD: DOCTOR_DASHBOARD_ROUTE,
+	DOCTOR_PROFILE: DOCTOR_PROFILE_ROUTE,
 	// Admin
 	ADMIN_DASHBOARD: ADMIN_DASHBOARD_ROUTE,
 	ADMIN_PRODUCTS: ADMIN_PRODUCTS_ROUTE,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarDays, ClipboardList, House, LogOut, MessageSquare, Stethoscope, Users } from "lucide-react";
+import { CalendarDays, ClipboardList, House, LogOut, MessageSquare, Stethoscope, Users, UserCircle } from "lucide-react";
 import { authService } from "@/services/authService";
 import { ROUTES } from "@/constants/routes";
 
@@ -14,6 +14,7 @@ const DoctorSidebar = () => {
 
   const menuItems = [
     { label: "Overview", href: ROUTES.DOCTOR_DASHBOARD, icon: Stethoscope },
+    { label: "Profile", href: ROUTES.DOCTOR_PROFILE, icon: UserCircle },
     { label: "Appointments", href: `${ROUTES.DOCTOR_DASHBOARD}#appointments`, icon: CalendarDays },
     { label: "Patients", href: `${ROUTES.DOCTOR_DASHBOARD}#patients`, icon: Users },
     { label: "Treatments", href: `${ROUTES.DOCTOR_DASHBOARD}#treatments`, icon: ClipboardList },
@@ -49,7 +50,11 @@ const DoctorSidebar = () => {
       <nav className="mx-2 flex gap-2 rounded-2xl bg-white/10 p-2 shadow-sm overflow-x-auto px-4 pb-4 lg:block lg:space-y-2 lg:overflow-visible lg:px-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === ROUTES.DOCTOR_DASHBOARD && item.label === "Overview";
+          // Active if current pathname exactly matches href
+          const isActive =
+            item.href === ROUTES.DOCTOR_DASHBOARD
+              ? pathname === ROUTES.DOCTOR_DASHBOARD
+              : pathname === item.href;
 
           return (
             <Link

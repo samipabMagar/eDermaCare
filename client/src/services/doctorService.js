@@ -37,4 +37,34 @@ export const doctorService = {
       throw new Error(getApiErrorMessage(error, "Failed to load doctors"));
     }
   },
+
+  // Get logged-in doctor's profile
+  async getDoctorProfile() {
+    try {
+      const response = await api.get("/doctors/profile");
+      return response.data?.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to load doctor profile"));
+    }
+  },
+
+  // Update logged-in doctor's professional profile
+  async updateDoctorProfile(profileData) {
+    try {
+      const response = await api.put("/doctors/profile", profileData);
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to update doctor profile"));
+    }
+  },
+
+  // Toggle logged-in doctor's availability
+  async updateDoctorAvailability() {
+    try {
+      const response = await api.patch("/doctors/profile/availability");
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to update availability"));
+    }
+  },
 };
