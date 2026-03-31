@@ -1,21 +1,8 @@
-import axios from "axios";
 import { cookies } from "next/headers";
+import { getProfileFromApi } from "@/services/server/profileService";
 import ProfileHeader from "@/components/user/profile/ProfileHeader";
 import EditProfileForm from "@/components/user/profile/EditProfileForm";
 import ChangePasswordForm from "@/components/user/profile/ChangePasswordForm";
-
-const getUserFromApi = async (token) => {
-  try {
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const response = await axios.get(`${apiBase}/users/profile`, {
-      headers: { Cookie: `token=${token}` },
-    });
-    return response.data?.data || null;
-  } catch {
-    return null;
-  }
-};
 
 export const metadata = {
   title: "My Profile | E-DermaCare",
@@ -25,7 +12,7 @@ export const metadata = {
 export default async function ProfilePage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const user = await getUserFromApi(token);
+  const user = await getProfileFromApi(token);
 
   if (!user) {
     return (

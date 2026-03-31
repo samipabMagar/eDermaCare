@@ -1,23 +1,7 @@
-import axios from "axios";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getProfileFromApi } from "@/services/server/profileService";
 import DoctorSidebar from "@/components/doctor/DoctorSidebar";
-
-const getCurrentUserFromApi = async (token) => {
-  try {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-    const response = await axios.get(`${apiBase}/users/profile`, {
-      headers: {
-        Cookie: `token=${token}`,
-      },
-    });
-
-    return response.data?.data || null;
-  } catch {
-    return null;
-  }
-};
 
 export default async function DoctorLayout({ children }) {
   const cookieStore = await cookies();
@@ -27,7 +11,7 @@ export default async function DoctorLayout({ children }) {
     redirect("/login");
   }
 
-  const currentUser = await getCurrentUserFromApi(token);
+  const currentUser = await getProfileFromApi(token);
 
   if (!currentUser) {
     redirect("/login");

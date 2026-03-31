@@ -1,5 +1,5 @@
-import axios from "axios";
 import { cookies } from "next/headers";
+import { getProfileFromApi } from "@/services/server/profileService";
 import ProfileHeader from "@/components/user/profile/ProfileHeader";
 import ChangePasswordForm from "@/components/user/profile/ChangePasswordForm";
 import AdminBasicInfoForm from "@/components/admin/profile/AdminBasicInfoForm";
@@ -9,24 +9,10 @@ export const metadata = {
   description: "Manage your admin account details and security settings.",
 };
 
-// Fetch the currently logged-in admin's profile from the API (server-side).
-const getAdminProfileFromApi = async (token) => {
-  try {
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const response = await axios.get(`${apiBase}/users/profile`, {
-      headers: { Cookie: `token=${token}` },
-    });
-    return response.data?.data || null;
-  } catch {
-    return null;
-  }
-};
-
 const AdminProfilePage = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const user = await getAdminProfileFromApi(token);
+  const user = await getProfileFromApi(token);
 
   if (!user) {
     return (

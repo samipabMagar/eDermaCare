@@ -1,23 +1,7 @@
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import axios from "axios";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-const getCurrentUserFromApi = async (token) => {
-  try {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-    const response = await axios.get(`${apiBase}/users/profile`, {
-      headers: {
-        Cookie: `token=${token}`,
-      },
-    });
-
-    return response.data?.data || null;
-  } catch {
-    return null;
-  }
-};
+import { getProfileFromApi } from "@/services/server/profileService";
 
 export default async function AdminLayout({ children }) {
   const cookieStore = await cookies();
@@ -27,7 +11,7 @@ export default async function AdminLayout({ children }) {
     redirect("/login");
   }
 
-  const currentUser = await getCurrentUserFromApi(token);
+  const currentUser = await getProfileFromApi(token);
 
   if (!currentUser) {
     redirect("/login");
