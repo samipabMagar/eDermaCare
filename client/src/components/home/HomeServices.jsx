@@ -13,7 +13,7 @@ const SERVICES = [
       "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=80",
     cta: "Find a Doctor",
     href: DOCTORS_ROUTE,
-    badge: "🩺 Live Sessions",
+    badge: "Live Sessions",
 
     imageRight: true,
   },
@@ -26,7 +26,7 @@ const SERVICES = [
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80",
     cta: "Book Consultation",
     href: DOCTORS_ROUTE,
-    badge: "📋 Tailored for You",
+    badge: "Tailored for You",
     imageRight: false,
   },
   {
@@ -38,7 +38,7 @@ const SERVICES = [
       "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&q=80",
     cta: "Shop Now",
     href: PRODUCT_ROUTE,
-    badge: "✨ Dermatologist-Approved",
+    badge: "Dermatologist-Approved",
     imageRight: true,
   },
 ];

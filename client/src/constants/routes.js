@@ -14,6 +14,7 @@ export const ADMIN_PRODUCTS_ROUTE = "/admin/products";
 export const ADMIN_PRODUCTS_NEW_ROUTE = "/admin/products/new";
 export const ADMIN_PENDING_DOCTORS_ROUTE = "/admin/doctors/pending";
 export const ADMIN_ALL_DOCTORS_ROUTE = "/admin/doctors";
+export const ADMIN_PROFILE_ROUTE = "/admin/profile";
 
 export const ROUTES = {
 	HOME: HOME_ROUTE,
@@ -31,4 +32,5 @@ export const ROUTES = {
 	ADMIN_PRODUCTS_NEW: ADMIN_PRODUCTS_NEW_ROUTE,
 	ADMIN_PENDING_DOCTORS: ADMIN_PENDING_DOCTORS_ROUTE,
 	ADMIN_ALL_DOCTORS: ADMIN_ALL_DOCTORS_ROUTE,
+	ADMIN_PROFILE: ADMIN_PROFILE_ROUTE,
 };

@@ -6,11 +6,8 @@ import HomeCTA from "@/components/home/HomeCTA";
 const HomeSections = () => (
   <>
     <HomeServices />
-
     <HomeHowItWorks />
-
     <HomeWhyUs />
-
     <HomeCTA />
   </>
 );

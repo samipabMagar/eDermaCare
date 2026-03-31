@@ -68,7 +68,6 @@ const HomeWhyUs = () => (
       </div>
 
       <div className="relative h-[420px] md:h-[500px]">
-        {/* Image */}
         <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-xl">
           <Image
             src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&q=80"

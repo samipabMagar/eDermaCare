@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ShoppingBag, ClipboardCheck, Stethoscope, LogOut, House } from "lucide-react";
+import { ShoppingBag, ClipboardCheck, Stethoscope, LogOut, House, UserCircle } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { authService } from "@/services/authService";
 
@@ -29,6 +29,12 @@ const AdminSidebar = () => {
       label: "All Doctors",
       href: ROUTES.ADMIN_ALL_DOCTORS,
       icon: Stethoscope,
+      match: "exact",
+    },
+    {
+      label: "My Profile",
+      href: ROUTES.ADMIN_PROFILE,
+      icon: UserCircle,
       match: "exact",
     },
   ];
