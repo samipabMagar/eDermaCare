@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import path from "path";
 import { fileURLToPath } from "url";
 import connection from "./configs/db.js";
-import "./models/index.js"; 
+import "./models/index.js";
 import routes from "./routes/index.js";
 
 // Load environment variables
@@ -35,12 +35,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Rate Limiting
+const isProduction = process.env.NODE_ENV === "production";
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: isProduction ? 100 : Number.MAX_SAFE_INTEGER,
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
+  // React Strict Mode and HMR can trigger duplicate requests in development.
+  skip: () => !isProduction,
 });
 app.use(limiter);
 
@@ -75,13 +79,12 @@ connection
   .then(() => {
     console.log("Database connection has been established successfully.");
     return connection.sync();
-  
   })
   .then(() => {
     console.log("Database synced successfully.");
-    app.listen(PORT, ()=> {
+    app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
-    })
+    });
   })
   .catch((error) => {
     console.error("Unable to connect to the database:", error);

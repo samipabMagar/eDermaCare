@@ -89,7 +89,7 @@ const CartPageContent = () => {
     };
 
     initializeCart();
-  }, [reduxCartItems, syncFromServer]);
+  }, [syncFromServer]);
 
   useEffect(() => {
     if (!isServerMode) {

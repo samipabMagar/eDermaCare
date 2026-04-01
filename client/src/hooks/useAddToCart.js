@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { authService } from "@/services/authService";
 import { cartService } from "@/services/cartService";
 import { addGuestItem, setCartItems } from "@/store/slices/cartSlice";
 
@@ -34,7 +35,15 @@ const useAddToCart = () => {
     try {
       setIsAdding(true);
 
-      if (isAuthenticated) {
+      let useServerCart = isAuthenticated;
+
+      // Redux auth can be false after refresh even when cookie session is valid.
+      if (!useServerCart) {
+        const currentUser = await authService.getCurrentUser();
+        useServerCart = Boolean(currentUser);
+      }
+
+      if (useServerCart) {
         await cartService.addItem(productId, quantity);
         const latestCart = await cartService.getCart();
         dispatch(setCartItems(mapServerCartItems(latestCart?.items || [])));
