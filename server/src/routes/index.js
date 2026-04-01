@@ -4,6 +4,7 @@ import doctorProfileRoutes from "./doctorProfileRoutes.js";
 import productRoutes from "./productRoutes.js";
 import brandRoutes from "./brandRoutes.js";
 import appointmentRoutes from "./appointmentRoutes.js";
+import cartRoutes from "./cartRoutes.js";
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use("/doctors", doctorProfileRoutes);
 router.use("/products", productRoutes);
 router.use("/brands", brandRoutes);
 router.use("/appointments", appointmentRoutes);
+router.use("/cart", cartRoutes);
 
 export default router;
