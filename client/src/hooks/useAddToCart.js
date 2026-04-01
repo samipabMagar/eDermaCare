@@ -20,9 +20,7 @@ const mapServerCartItems = (items = []) => {
 const useAddToCart = () => {
   const [isAdding, setIsAdding] = useState(false);
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector(
-    (state) => state.auth?.isAuthenticated === true,
-  );
+  const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
 
   const addToCart = async (product, quantity = 1) => {
     const productId = Number(product?.product_id);
@@ -35,18 +33,33 @@ const useAddToCart = () => {
     try {
       setIsAdding(true);
 
-      let useServerCart = isAuthenticated;
-
-      // Redux auth can be false after refresh even when cookie session is valid.
-      if (!useServerCart) {
-        const currentUser = await authService.getCurrentUser();
-        useServerCart = Boolean(currentUser);
-      }
+      // Resolve auth from live session so stale Redux state after logout doesn't hit protected cart APIs.
+      const currentUser = await authService.getCurrentUser();
+      const useServerCart = Boolean(currentUser) || isAuthenticated === true;
 
       if (useServerCart) {
-        await cartService.addItem(productId, quantity);
-        const latestCart = await cartService.getCart();
-        dispatch(setCartItems(mapServerCartItems(latestCart?.items || [])));
+        try {
+          await cartService.addItem(productId, quantity);
+          const latestCart = await cartService.getCart();
+          dispatch(setCartItems(mapServerCartItems(latestCart?.items || [])));
+        } catch (serverError) {
+          const message = serverError?.message || "";
+          const isAuthError =
+            message.toLowerCase().includes("logged in") ||
+            message.toLowerCase().includes("unauthorized") ||
+            message.toLowerCase().includes("forbidden");
+
+          if (!isAuthError) {
+            throw serverError;
+          }
+
+          dispatch(
+            addGuestItem({
+              product,
+              quantity,
+            }),
+          );
+        }
       } else {
         dispatch(
           addGuestItem({

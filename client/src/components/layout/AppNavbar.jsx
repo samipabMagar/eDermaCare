@@ -145,26 +145,25 @@ const AppNavbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <Link
+            href={CART_ROUTE}
+            className="relative p-2 rounded-lg text-slate-500 transition-colors hover:text-[#2FA4A9] hover:bg-[#e8f7f8]"
+            aria-label="Open cart"
+          >
+            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+            {cartItemCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+
           {currentUser ? (
-            <>
-              <Link
-                href={CART_ROUTE}
-                className="relative p-2 rounded-lg text-slate-500 transition-colors hover:text-[#2FA4A9] hover:bg-[#e8f7f8]"
-                aria-label="Open products"
-              >
-                <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
-                    {cartItemCount}
-                  </span>
-                )}
-              </Link>
-              <ProfileMenuModal
-                currentUser={currentUser}
-                profileImageUrl={profileImageUrl}
-                onLoggedOut={() => setCurrentUser(null)}
-              />
-            </>
+            <ProfileMenuModal
+              currentUser={currentUser}
+              profileImageUrl={profileImageUrl}
+              onLoggedOut={() => setCurrentUser(null)}
+            />
           ) : (
             <>
               <Link
@@ -223,21 +222,21 @@ const AppNavbar = () => {
           })}
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            {currentUser ? (
-              <Link
-                href={CART_ROUTE}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-[#2FA4A9] transition"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Cart
-                {cartItemCount > 0 && (
-                  <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
-                    {cartItemCount}
-                  </span>
-                )}
-              </Link>
-            ) : (
+            <Link
+              href={CART_ROUTE}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-[#2FA4A9] transition"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Cart
+              {cartItemCount > 0 && (
+                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
+                  {cartItemCount}
+                </span>
+              )}
+            </Link>
+
+            {currentUser ? null : (
               <>
                 <Link
                   href={LOGIN_ROUTE}
