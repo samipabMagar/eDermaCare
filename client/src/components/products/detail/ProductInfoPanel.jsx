@@ -58,7 +58,7 @@ const ProductInfoPanel = ({ product }) => {
 
   const handleAddToCart = async () => {
     if (!inStock || isAdding) return;
-    await addToCart(product.product_id, quantity);
+    await addToCart(product, quantity);
   };
 
   const skinTypes = Array.isArray(product.skin_type) ? product.skin_type : [];

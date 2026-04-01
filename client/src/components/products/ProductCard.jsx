@@ -60,7 +60,7 @@ const ProductCard = ({ product }) => {
     event.preventDefault();
     event.stopPropagation();
     if (!inStock || isAdding) return;
-    await addToCart(product.product_id, 1);
+    await addToCart(product, 1);
   };
 
   return (
