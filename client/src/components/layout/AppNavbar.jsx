@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import { Menu, ShoppingCart, X } from "lucide-react";
 import { authService } from "@/services/authService";
+import { cartService } from "@/services/cartService";
+import { setCartItems } from "@/store/slices/cartSlice";
 import ProfileMenuModal from "@/components/layout/ProfileMenuModal";
 import {
   HOME_ROUTE,
@@ -37,9 +40,17 @@ const resolveProfileImageUrl = (profileImagePath) => {
 
 const AppNavbar = () => {
   const pathname = usePathname();
+  const dispatch = useDispatch();
+  const guestCartItems = useSelector((state) => state.cart?.items ?? []);
   const [currentUser, setCurrentUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const cartItemCount = useMemo(
+    () =>
+      guestCartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+    [guestCartItems],
+  );
 
   const hideNavbar =
     pathname.startsWith("/dashboard") ||
@@ -60,9 +71,26 @@ const AppNavbar = () => {
     const loadCurrentUser = async () => {
       const user = await authService.getCurrentUser();
       setCurrentUser(user);
+
+      if (!user) return;
+
+      try {
+        const serverCart = await cartService.getCart();
+        const normalizedItems = (serverCart?.items || []).map((item) => ({
+          product_id: Number(item.product_id),
+          name: item.name || "",
+          price: Number(item.price || 0),
+          image: item.image || null,
+          quantity: Number(item.quantity || 0),
+        }));
+
+        dispatch(setCartItems(normalizedItems));
+      } catch {
+        // Keep existing cart state if server cart fetch fails.
+      }
     };
     loadCurrentUser();
-  }, []);
+  }, [dispatch]);
 
   const profileImageUrl = useMemo(
     () => resolveProfileImageUrl(currentUser?.profile_image),
@@ -120,10 +148,15 @@ const AppNavbar = () => {
             <>
               <Link
                 href={PRODUCT_ROUTE}
-                className="p-2 rounded-lg text-slate-500 transition-colors hover:text-[#2FA4A9] hover:bg-[#e8f7f8]"
+                className="relative p-2 rounded-lg text-slate-500 transition-colors hover:text-[#2FA4A9] hover:bg-[#e8f7f8]"
                 aria-label="Open products"
               >
                 <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
+                    {cartItemCount}
+                  </span>
+                )}
               </Link>
               <ProfileMenuModal
                 currentUser={currentUser}
@@ -197,6 +230,11 @@ const AppNavbar = () => {
               >
                 <ShoppingCart className="h-4 w-4" />
                 Products
+                {cartItemCount > 0 && (
+                  <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
+                    {cartItemCount}
+                  </span>
+                )}
               </Link>
             ) : (
               <>

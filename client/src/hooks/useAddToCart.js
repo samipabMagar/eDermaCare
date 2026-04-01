@@ -4,7 +4,17 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { cartService } from "@/services/cartService";
-import { addGuestItem } from "@/store/slices/cartSlice";
+import { addGuestItem, setCartItems } from "@/store/slices/cartSlice";
+
+const mapServerCartItems = (items = []) => {
+  return items.map((item) => ({
+    product_id: Number(item.product_id),
+    name: item.name || "",
+    price: Number(item.price || 0),
+    image: item.image || null,
+    quantity: Number(item.quantity || 0),
+  }));
+};
 
 const useAddToCart = () => {
   const [isAdding, setIsAdding] = useState(false);
@@ -26,6 +36,8 @@ const useAddToCart = () => {
 
       if (isAuthenticated) {
         await cartService.addItem(productId, quantity);
+        const latestCart = await cartService.getCart();
+        dispatch(setCartItems(mapServerCartItems(latestCart?.items || [])));
       } else {
         dispatch(
           addGuestItem({
