@@ -10,6 +10,7 @@ import { cartService } from "@/services/cartService";
 import { setCartItems } from "@/store/slices/cartSlice";
 import ProfileMenuModal from "@/components/layout/ProfileMenuModal";
 import {
+  CART_ROUTE,
   HOME_ROUTE,
   LOGIN_ROUTE,
   PRODUCT_ROUTE,
@@ -147,7 +148,7 @@ const AppNavbar = () => {
           {currentUser ? (
             <>
               <Link
-                href={PRODUCT_ROUTE}
+                href={CART_ROUTE}
                 className="relative p-2 rounded-lg text-slate-500 transition-colors hover:text-[#2FA4A9] hover:bg-[#e8f7f8]"
                 aria-label="Open products"
               >
@@ -224,12 +225,12 @@ const AppNavbar = () => {
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             {currentUser ? (
               <Link
-                href={PRODUCT_ROUTE}
+                href={CART_ROUTE}
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-[#2FA4A9] transition"
               >
                 <ShoppingCart className="h-4 w-4" />
-                Products
+                Cart
                 {cartItemCount > 0 && (
                   <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2FA4A9] px-1.5 text-[10px] font-bold text-white">
                     {cartItemCount}
