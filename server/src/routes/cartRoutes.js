@@ -1,9 +1,10 @@
 import express from "express";
 import cartController from "../controllers/cartController.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
-import { validate } from "../middlewares/validateMiddleware.js";
+import { validate, validateParams } from "../middlewares/validateMiddleware.js";
 import {
   addCartItemSchema,
+  cartItemParamsSchema,
   updateCartItemSchema,
 } from "../validators/cartValidator.js";
 
@@ -20,10 +21,16 @@ router.post(
 router.patch(
   "/items/:itemId",
   authenticate,
+  validateParams(cartItemParamsSchema),
   validate(updateCartItemSchema),
   cartController.updateItem,
 );
-router.delete("/items/:itemId", authenticate, cartController.removeItem);
+router.delete(
+  "/items/:itemId",
+  authenticate,
+  validateParams(cartItemParamsSchema),
+  cartController.removeItem,
+);
 router.delete("/", authenticate, cartController.clearCart);
 
 export default router;

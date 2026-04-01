@@ -42,13 +42,6 @@ class CartController {
       const userId = req.user.id;
       const itemId = Number(req.params.itemId);
 
-      if (!itemId || itemId < 1) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid cart item id",
-        });
-      }
-
       const updatedItem = await cartService.updateItemQuantity(
         userId,
         itemId,
@@ -72,13 +65,6 @@ class CartController {
     try {
       const userId = req.user.id;
       const itemId = Number(req.params.itemId);
-
-      if (!itemId || itemId < 1) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid cart item id",
-        });
-      }
 
       const result = await cartService.removeItem(userId, itemId);
 
