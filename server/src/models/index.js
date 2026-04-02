@@ -120,6 +120,8 @@ productModel.hasMany(orderItemModel, {
 orderItemModel.belongsTo(productModel, {
   foreignKey: "product_id",
   as: "product",
+  onDelete: "RESTRICT",
+  onUpdate: "CASCADE",
 });
 
 export {

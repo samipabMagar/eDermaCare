@@ -23,12 +23,12 @@ const orderItemModel = connection.define(
 
     product_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: "products",
         key: "product_id",
       },
-      onDelete: "SET NULL",
+      onDelete: "RESTRICT",
       onUpdate: "CASCADE",
     },
 

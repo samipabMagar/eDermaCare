@@ -10,7 +10,7 @@ const router = express.Router();
 router.post(
   "/checkout",
   authenticate,
-  authorize("user"),
+  authorize("user", "doctor", "admin"),
   validate(createOrderSchema),
   orderController.checkout,
 );
