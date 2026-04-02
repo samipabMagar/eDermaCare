@@ -219,6 +219,30 @@ class OrderService {
 
     return orders.map((order) => this.formatOrder(order));
   }
+
+  async getOrderById(currentUserId, currentUserRole, orderId) {
+    const order = await orderModel.findByPk(orderId, {
+      include: [
+        {
+          model: orderItemModel,
+          as: "items",
+        },
+      ],
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    if (
+      currentUserRole === "user" &&
+      Number(order.user_id) !== Number(currentUserId)
+    ) {
+      throw new Error("You do not have permission to view this order");
+    }
+
+    return this.formatOrder(order);
+  }
 }
 
 export default new OrderService();

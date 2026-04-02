@@ -68,7 +68,7 @@ const ProductCatalog = () => {
       <main className="mx-auto w-full max-w-7xl px-6 py-7 pb-16">
         {error && (
           <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-            ⚠️ {error}
+            {error}
           </div>
         )}
 

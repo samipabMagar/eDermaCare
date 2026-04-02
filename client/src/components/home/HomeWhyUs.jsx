@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ShieldCheck, Zap, Sparkles } from "lucide-react";
+import { ShieldCheck, Zap, Sparkles, Star } from "lucide-react";
 
 const TRUST_POINTS = [
   {
@@ -81,7 +81,7 @@ const HomeWhyUs = () => (
         </div>
 
         <div className="absolute left-4 top-4 flex items-center gap-2 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <span className="text-xl font-extrabold text-[#1D7D82]">4.9★</span>
+          <span className="text-xl flex items-center gap-1 font-extrabold text-[#1D7D82]">4.9<Star className="h-3 w-3"/></span>
           <div>
             <p className="text-[11px] font-bold text-slate-800">
               Patient Rating

@@ -2,8 +2,8 @@ import express from "express";
 import orderController from "../controllers/orderController.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { authorize } from "../middlewares/authorizeMiddleware.js";
-import { validate } from "../middlewares/validateMiddleware.js";
-import { createOrderSchema } from "../validators/orderValidator.js";
+import { validate, validateParams } from "../middlewares/validateMiddleware.js";
+import { createOrderSchema, orderParamsSchema } from "../validators/orderValidator.js";
 
 const router = express.Router();
 
@@ -22,4 +22,11 @@ router.get(
   orderController.getMyOrders,
 );
 
+router.get(
+  "/:orderId",
+  authenticate,
+  authorize("user", "doctor", "admin"),
+  validateParams(orderParamsSchema),
+  orderController.getOrderById,
+);
 export default router;
