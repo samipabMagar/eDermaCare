@@ -5,6 +5,8 @@ import brandModel from "./brandModel.js";
 import appointmentModel from "./appointmentModel.js";
 import cartModel from "./cartModel.js";
 import cartItemModel from "./cartItemModel.js";
+import orderModel from "./orderModel.js";
+import orderItemModel from "./orderItemModel.js";
 
 // Define relationships
 // One-to-One: User has one DoctorProfile
@@ -87,6 +89,39 @@ cartItemModel.belongsTo(productModel, {
   as: "product",
 });
 
+// One-to-Many: User has many Orders
+userModel.hasMany(orderModel, {
+  foreignKey: "user_id",
+  as: "orders",
+});
+
+orderModel.belongsTo(userModel, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+// One-to-Many: Order has many OrderItems
+orderModel.hasMany(orderItemModel, {
+  foreignKey: "order_id",
+  as: "items",
+});
+
+orderItemModel.belongsTo(orderModel, {
+  foreignKey: "order_id",
+  as: "order",
+});
+
+// One-to-Many: Product has many OrderItems
+productModel.hasMany(orderItemModel, {
+  foreignKey: "product_id",
+  as: "orderItems",
+});
+
+orderItemModel.belongsTo(productModel, {
+  foreignKey: "product_id",
+  as: "product",
+});
+
 export {
   userModel,
   doctorProfileModel,
@@ -95,4 +130,6 @@ export {
   appointmentModel,
   cartModel,
   cartItemModel,
+  orderModel,
+  orderItemModel,
 };
