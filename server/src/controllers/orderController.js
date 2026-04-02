@@ -64,6 +64,32 @@ class OrderController {
       });
     }
   }
+
+  async cancelOrder(req, res) {
+      try {
+        const orderId = req.params.orderId;
+        const currentUserId = req.user.id;
+        const currentUserRole = req.user.role;
+  
+        const order = await orderService.cancelOrder(
+          currentUserId,
+          currentUserRole,
+          orderId,
+          req.body,
+        );
+  
+        return res.status(200).json({
+          success: true,
+          message: "Order cancelled successfully",
+          data: order,
+        });
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.message || "Failed to cancel order",
+        });
+      }
+    }
 }
 
 export default new OrderController();

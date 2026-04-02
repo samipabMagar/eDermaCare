@@ -243,6 +243,58 @@ class OrderService {
 
     return this.formatOrder(order);
   }
+
+  async cancelOrder(currentUserId, currentUserRole, orderId, payload = {}) {
+    return await connection.transaction(async (transaction) => {
+      const order = await orderModel.findByPk(orderId, {
+        include: [
+          {
+            model: orderItemModel,
+            as: "items",
+          },
+        ],
+        transaction,
+      });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      const isAdmin = currentUserRole === "admin";
+      const isOwner = Number(order.user_id) === Number(currentUserId);
+
+      if (!isAdmin && !isOwner) {
+        throw new Error("You do not have permission to cancel this order");
+      }
+
+      if (["cancelled", "delivered", "returned"].includes(order.status)) {
+        throw new Error("This order cannot be cancelled");
+      }
+
+      await order.update(
+        {
+          status: "cancelled",
+          cancel_reason: payload.reason || "Cancelled by user",
+          cancelled_at: new Date(),
+        },
+        { transaction },
+      );
+
+      for (const item of order.items || []) {
+        if (!item.product_id) {
+          continue;
+        }
+
+        await productModel.increment("stock_quantity", {
+          by: Number(item.quantity),
+          where: { product_id: item.product_id },
+          transaction,
+        });
+      }
+
+      return this.formatOrder(order);
+    });
+  }
 }
 
 export default new OrderService();

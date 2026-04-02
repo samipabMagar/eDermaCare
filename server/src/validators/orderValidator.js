@@ -45,3 +45,14 @@ export const orderParamsSchema = z.object({
     .int("Order id must be an integer")
     .positive("Order id must be a positive integer"),
 });
+
+export const cancelOrderSchema = z.object({
+  reason: z
+    .string({
+      invalid_type_error: "Reason must be a string",
+    })
+    .trim()
+    .min(3, "Reason must be at least 3 characters")
+    .max(500, "Reason must not exceed 500 characters")
+    .optional(),
+});
