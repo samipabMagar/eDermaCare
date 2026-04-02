@@ -39,4 +39,11 @@ router.patch(
   orderController.cancelOrder,
 );
 
+router.get(
+  "/",
+  authenticate,
+  authorize("admin"),
+  orderController.getAllOrdersForAdmin,
+);
+
 export default router;

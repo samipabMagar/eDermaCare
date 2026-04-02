@@ -234,10 +234,10 @@ class OrderService {
       throw new Error("Order not found");
     }
 
-    if (
-      currentUserRole === "user" &&
-      Number(order.user_id) !== Number(currentUserId)
-    ) {
+    const isAdmin = currentUserRole === "admin";
+    const isOwner = Number(order.user_id) === Number(currentUserId);
+
+    if (!isAdmin && !isOwner) {
       throw new Error("You do not have permission to view this order");
     }
 
@@ -294,6 +294,64 @@ class OrderService {
 
       return this.formatOrder(order);
     });
+  }
+
+  async getAllOrdersForAdmin(query = {}) {
+    const page = Math.max(Number(query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(query.limit) || 20, 1), 100);
+    const offset = (page - 1) * limit;
+
+    const whereClause = {};
+
+    if (query.status && ORDER_STATUSES.has(query.status)) {
+      whereClause.status = query.status;
+    }
+
+    if (query.payment_status) {
+      whereClause.payment_status = query.payment_status;
+    }
+
+    if (query.user_id) {
+      whereClause.user_id = Number(query.user_id);
+    }
+
+    if (query.search) {
+      whereClause[Op.or] = [
+        {
+          order_number: {
+            [Op.like]: `%${query.search}%`,
+          },
+        },
+        {
+          contact_phone: {
+            [Op.like]: `%${query.search}%`,
+          },
+        },
+      ];
+    }
+
+    const { rows, count } = await orderModel.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: orderItemModel,
+          as: "items",
+        },
+      ],
+      order: [["created_at", "DESC"]],
+      limit,
+      offset,
+    });
+
+    return {
+      pagination: {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+      },
+      orders: rows.map((order) => this.formatOrder(order)),
+    };
   }
 }
 
