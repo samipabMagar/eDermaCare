@@ -1,0 +1,18 @@
+import express from "express";
+import orderController from "../controllers/orderController.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
+import { authorize } from "../middlewares/authorizeMiddleware.js";
+import { validate } from "../middlewares/validateMiddleware.js";
+import { createOrderSchema } from "../validators/orderValidator.js";
+
+const router = express.Router();
+
+router.post(
+  "/checkout",
+  authenticate,
+  authorize("user"),
+  validate(createOrderSchema),
+  orderController.checkout,
+);
+
+export default router;
