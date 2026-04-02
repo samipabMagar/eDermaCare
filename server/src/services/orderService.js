@@ -6,6 +6,16 @@ import productModel from "../models/productModel.js";
 import orderModel from "../models/orderModel.js";
 import orderItemModel from "../models/orderItemModel.js";
 
+const ORDER_STATUSES = new Set([
+  "pending",
+  "confirmed",
+  "packed",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "returned",
+]);
+
 class OrderService {
   toFixedAmount(value) {
     return Number(value || 0).toFixed(2);
@@ -187,6 +197,27 @@ class OrderService {
 
       return this.formatOrder(createdOrder);
     });
+  }
+
+  async getMyOrders(userId, query = {}) {
+    const whereClause = { user_id: userId };
+
+    if (query.status && ORDER_STATUSES.has(query.status)) {
+      whereClause.status = query.status;
+    }
+
+    const orders = await orderModel.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: orderItemModel,
+          as: "items",
+        },
+      ],
+      order: [["created_at", "DESC"]],
+    });
+
+    return orders.map((order) => this.formatOrder(order));
   }
 }
 

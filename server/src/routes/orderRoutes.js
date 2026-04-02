@@ -15,4 +15,11 @@ router.post(
   orderController.checkout,
 );
 
+router.get(
+  "/my",
+  authenticate,
+  authorize("user", "doctor", "admin"),
+  orderController.getMyOrders,
+);
+
 export default router;
