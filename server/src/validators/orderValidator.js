@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+const ORDER_STATUSES = [
+  "pending",
+  "confirmed",
+  "packed",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "returned",
+];
+
 const PAYMENT_METHODS = ["cod", "khalti", "esewa", "stripe"];
 
 export const createOrderSchema = z.object({
@@ -55,4 +65,11 @@ export const cancelOrderSchema = z.object({
     .min(3, "Reason must be at least 3 characters")
     .max(500, "Reason must not exceed 500 characters")
     .optional(),
+});
+
+export const adminUpdateOrderStatusSchema = z.object({
+  status: z.enum(ORDER_STATUSES, {
+    required_error: "Status is required",
+    invalid_type_error: "Status is invalid",
+  }),
 });

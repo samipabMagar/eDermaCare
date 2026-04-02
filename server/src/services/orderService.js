@@ -353,6 +353,29 @@ class OrderService {
       orders: rows.map((order) => this.formatOrder(order)),
     };
   }
+
+   async updateOrderStatus(orderId, status) {
+    if (!ORDER_STATUSES.has(status)) {
+      throw new Error("Invalid order status");
+    }
+
+    const order = await orderModel.findByPk(orderId, {
+      include: [
+        {
+          model: orderItemModel,
+          as: "items",
+        },
+      ],
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    await order.update({ status });
+
+    return this.formatOrder(order);
+  }
 }
 
 export default new OrderService();

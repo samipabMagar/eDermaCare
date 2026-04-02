@@ -110,6 +110,27 @@ class OrderController {
       });
     }
   }
+
+  async updateOrderStatus(req, res) {
+    try {
+      const orderId = req.params.orderId;
+      const order = await orderService.updateOrderStatus(
+        orderId,
+        req.body.status,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Order status updated successfully",
+        data: order,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to update order status",
+      });
+    }
+  }
 }
 
 export default new OrderController();
