@@ -60,12 +60,39 @@ const getTags = (specialization) => {
     .slice(0, 3);
 };
 
+const formatEducationLabel = (education) => {
+  if (!education) return "Verified doctor profile";
+
+  if (typeof education === "string") {
+    return education;
+  }
+
+  if (Array.isArray(education)) {
+    const firstItem = education[0];
+
+    if (typeof firstItem === "string") {
+      return firstItem;
+    }
+
+    if (firstItem && typeof firstItem === "object" && firstItem.degree) {
+      return firstItem.degree;
+    }
+  }
+
+  if (typeof education === "object" && education.degree) {
+    return education.degree;
+  }
+
+  return "Verified doctor profile";
+};
+
 const DoctorCard = ({ doctor }) => {
   const profileImageUrl = resolveProfileImageUrl(doctor.user?.profile_image);
   const doctorName = doctor.user?.full_name || "Doctor";
   const doctorId = doctor.user?.user_id;
   const tagList = getTags(doctor.specialization);
   const isTopRated = Number(doctor.rating || 0) >= 4.8;
+  const educationLabel = formatEducationLabel(doctor.education);
 
   const badgeText = isTopRated
     ? "Top Rated"
@@ -84,7 +111,7 @@ const DoctorCard = ({ doctor }) => {
 
         <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
           <Award className="h-3 w-3 text-teal-600" />
-          <span>{doctor.education || "Verified doctor profile"}</span>
+          <span>{educationLabel}</span>
         </div>
       </div>
 

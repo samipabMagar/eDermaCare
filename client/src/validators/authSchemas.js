@@ -37,10 +37,13 @@ export const registerSchema = z
     gender: z.enum(["male", "female", "other"], {
       required_error: "Gender is required",
     }),
-    skin_type: z
-      .enum(["normal", "oily", "dry", "combination", "sensitive"])
-      .optional()
-      .nullable(),
+    skin_type: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z
+        .enum(["normal", "oily", "dry", "combination", "sensitive"])
+        .optional()
+        .nullable(),
+    ),
     specialization: z.string().trim().optional(),
     license_number: z.string().trim().optional(),
     years_of_experience: z.preprocess(
