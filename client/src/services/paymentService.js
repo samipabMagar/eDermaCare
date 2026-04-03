@@ -9,6 +9,17 @@ const getApiErrorMessage = (error, fallbackMessage) => {
 };
 
 export const paymentService = {
+  async getOrderPaymentHistory(orderId) {
+    try {
+      const response = await api.get(`/payments/${orderId}/history`);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to load payment history"),
+      );
+    }
+  },
+
   async initiateKhalti(orderId, returnUrl) {
     try {
       const payload = returnUrl ? { return_url: returnUrl } : {};

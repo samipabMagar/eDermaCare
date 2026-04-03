@@ -32,7 +32,7 @@ export default async function UserDashboardLayout({ children }) {
       </div>
 
       <div className="relative z-10 flex w-full flex-col lg:pl-72">
-        <UserSidebar />
+        <UserSidebar currentUser={currentUser} />
         <main className="w-full px-4 py-3 sm:px-6">{children}</main>
       </div>
     </div>

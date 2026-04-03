@@ -167,6 +167,7 @@ const CheckoutPageContent = () => {
           order.order_id,
           returnUrl,
         );
+
         const paymentUrl =
           paymentInit?.khalti?.payment_url || paymentInit?.khalti?.paymentUrl;
 
