@@ -7,6 +7,7 @@ import cartModel from "./cartModel.js";
 import cartItemModel from "./cartItemModel.js";
 import orderModel from "./orderModel.js";
 import orderItemModel from "./orderItemModel.js";
+import paymentModel from "./paymentModel.js";
 
 // Define relationships
 // One-to-One: User has one DoctorProfile
@@ -124,6 +125,28 @@ orderItemModel.belongsTo(productModel, {
   onUpdate: "CASCADE",
 });
 
+// One-to-Many: User has many Payments
+userModel.hasMany(paymentModel, {
+  foreignKey: "user_id",
+  as: "payments",
+});
+
+paymentModel.belongsTo(userModel, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+// One-to-Many: Order has many Payments
+orderModel.hasMany(paymentModel, {
+  foreignKey: "order_id",
+  as: "payments",
+});
+
+paymentModel.belongsTo(orderModel, {
+  foreignKey: "order_id",
+  as: "order",
+});
+
 export {
   userModel,
   doctorProfileModel,
@@ -134,4 +157,5 @@ export {
   cartItemModel,
   orderModel,
   orderItemModel,
+  paymentModel,
 };
