@@ -11,6 +11,15 @@ import {
 
 const router = express.Router();
 
+router.get(
+  "/:orderId/history",
+  authenticate,
+  authorize("user", "doctor", "admin"),
+  validateParams(orderParamsSchema),
+  paymentController.getOrderPaymentHistory,
+);
+
+
 router.post(
   "/khalti/:orderId/initiate",
   authenticate,
@@ -28,5 +37,7 @@ router.post(
   validate(khaltiVerifySchema),
   paymentController.verifyKhalti,
 );
+
+
 
 export default router;

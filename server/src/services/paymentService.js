@@ -74,6 +74,27 @@ class PaymentService {
     };
   }
 
+  async getOrderPaymentHistory({ orderId, currentUserId, currentUserRole }) {
+    const order = await this.getOrderForPayment(
+      orderId,
+      currentUserId,
+      currentUserRole,
+    );
+
+    const payments = await paymentModel.findAll({
+      where: { order_id: order.order_id },
+      order: [["created_at", "DESC"]],
+    });
+
+    return {
+      order_id: order.order_id,
+      order_number: order.order_number,
+      order_payment_status: order.payment_status,
+      order_payment_method: order.payment_method,
+      payments: payments.map((payment) => this.formatPayment(payment)),
+    };
+  }
+
   async initiateKhaltiPayment({
     orderId,
     currentUserId,
