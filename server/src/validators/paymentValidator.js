@@ -10,4 +10,15 @@ export const khaltiInitiateSchema = z.object({
     .optional(),
 });
 
+export const khaltiVerifySchema = z.object({
+  pidx: z
+    .string({
+      required_error: "pidx is required",
+      invalid_type_error: "pidx must be a string",
+    })
+    .trim()
+    .min(1, "pidx is required"),
+});
+
+
 

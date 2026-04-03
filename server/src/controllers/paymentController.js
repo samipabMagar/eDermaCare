@@ -26,6 +26,32 @@ class PaymentController {
       });
     }
   }
+
+  async verifyKhalti(req, res) {
+    try {
+      const orderId = req.params.orderId;
+      const currentUserId = req.user.id;
+      const currentUserRole = req.user.role;
+
+      const result = await paymentService.verifyKhaltiPayment({
+        orderId,
+        currentUserId,
+        currentUserRole,
+        pidx: req.body.pidx,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Khalti payment status checked successfully",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to verify Khalti payment",
+      });
+    }
+  }
 }
 
 export default new PaymentController();

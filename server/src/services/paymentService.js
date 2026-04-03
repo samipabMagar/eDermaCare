@@ -2,6 +2,7 @@ import orderModel from "../models/orderModel.js";
 import paymentModel from "../models/paymentModel.js";
 
 const KHALTI_INITIATE_URL = "https://a.khalti.com/api/v2/epayment/initiate/";
+const KHALTI_LOOKUP_URL = "https://a.khalti.com/api/v2/epayment/lookup/";
 
 class PaymentService {
   getKhaltiSecretKey() {
@@ -141,6 +142,82 @@ class PaymentService {
         gateway: payment.gateway,
         status: payment.status,
         gateway_reference: payment.gateway_reference,
+      },
+      khalti: khaltiResponse,
+    };
+  }
+
+  async verifyKhaltiPayment({ orderId, currentUserId, currentUserRole, pidx }) {
+    const order = await this.getOrderForPayment(
+      orderId,
+      currentUserId,
+      currentUserRole,
+    );
+
+    if (order.payment_method !== "khalti") {
+      throw new Error("This order is not configured for Khalti payment");
+    }
+
+    const payment = await paymentModel.findOne({
+      where: {
+        order_id: order.order_id,
+        gateway: "khalti",
+        gateway_reference: pidx,
+      },
+      order: [["created_at", "DESC"]],
+    });
+
+    if (!payment) {
+      throw new Error(
+        "No initiated Khalti payment found for this order and pidx",
+      );
+    }
+
+    const khaltiResponse = await this.callKhalti(KHALTI_LOOKUP_URL, { pidx });
+    const khaltiStatus = (khaltiResponse.status || "").toLowerCase();
+
+    if (khaltiStatus === "completed") {
+      payment.status = "completed";
+      payment.transaction_id =
+        khaltiResponse?.transaction_id || khaltiResponse?.idx || null;
+      payment.gateway_response = khaltiResponse;
+      payment.completed_at = new Date();
+
+      await payment.save();
+
+      await order.update({
+        payment_status: "paid",
+        paid_at: new Date(),
+      });
+    } else if (["pending", "initiated"].includes(khaltiStatus)) {
+      payment.status = "pending";
+      payment.gateway_response = khaltiResponse;
+      await payment.save();
+
+      if (order.payment_status !== "pending") {
+        await order.update({ payment_status: "pending" });
+      }
+    } else {
+      payment.status = "failed";
+      payment.gateway_response = khaltiResponse;
+      payment.failed_at = new Date();
+      await payment.save();
+
+      await order.update({ payment_status: "failed" });
+    }
+
+    await order.reload();
+
+    return {
+      order_id: order.order_id,
+      order_number: order.order_number,
+      payment_status: order.payment_status,
+      payment: {
+        payment_id: payment.payment_id,
+        gateway: payment.gateway,
+        status: payment.status,
+        gateway_reference: payment.gateway_reference,
+        transaction_id: payment.transaction_id,
       },
       khalti: khaltiResponse,
     };
