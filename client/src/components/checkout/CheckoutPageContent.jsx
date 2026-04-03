@@ -36,6 +36,24 @@ const buildSummary = (items = []) => {
   };
 };
 
+const formatAddressForCheckout = (address) => {
+  if (!address) return "";
+
+  if (typeof address === "string") {
+    return address;
+  }
+
+  const chunks = [
+    address.street,
+    address.area,
+    address.city,
+    address.province,
+    address.country,
+  ].filter(Boolean);
+
+  return chunks.join(", ");
+};
+
 const CheckoutPageContent = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -47,6 +65,8 @@ const CheckoutPageContent = () => {
   const [summary, setSummary] = useState(buildSummary([]));
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
     shipping_address: "",
     contact_phone: "",
     notes: "",
@@ -63,6 +83,14 @@ const CheckoutPageContent = () => {
           router.push(LOGIN_ROUTE);
           return;
         }
+
+        setFormData((prev) => ({
+          ...prev,
+          full_name: user.full_name || "",
+          email: user.email || "",
+          contact_phone: user.phone || "",
+          shipping_address: formatAddressForCheckout(user.address),
+        }));
 
         const cart = await cartService.getCart();
         const cartItems = Array.isArray(cart?.items) ? cart.items : [];
@@ -92,6 +120,16 @@ const CheckoutPageContent = () => {
   };
 
   const handleContinue = () => {
+    if (formData.full_name.trim().length < 2) {
+      toast.error("Name must be at least 2 characters");
+      return;
+    }
+
+    if (!formData.email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     if (formData.shipping_address.trim().length < 5) {
       toast.error("Shipping address must be at least 5 characters");
       return;
@@ -121,6 +159,10 @@ const CheckoutPageContent = () => {
 
       if (paymentMethod === "khalti") {
         const returnUrl = `${window.location.origin}/payment/khalti/return`;
+        window.localStorage.setItem(
+          "pendingKhaltiOrderId",
+          String(order.order_id),
+        );
         const paymentInit = await paymentService.initiateKhalti(
           order.order_id,
           returnUrl,

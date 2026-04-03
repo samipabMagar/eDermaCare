@@ -23,4 +23,17 @@ export const paymentService = {
       );
     }
   },
+
+  async verifyKhalti(orderId, pidx) {
+    try {
+      const response = await api.post(`/payments/khalti/${orderId}/verify`, {
+        pidx,
+      });
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to verify Khalti payment"),
+      );
+    }
+  },
 };

@@ -9,6 +9,39 @@ const CheckoutInfoStep = ({ formData, onChange, onContinue, isBusy }) => {
         <div className="space-y-4">
           <div>
             <label
+              htmlFor="full_name"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              Full Name
+            </label>
+            <input
+              id="full_name"
+              value={formData.full_name}
+              onChange={(event) => onChange("full_name", event.target.value)}
+              placeholder="Your full name"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#0F9EA5]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(event) => onChange("email", event.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#0F9EA5]"
+            />
+          </div>
+
+          <div>
+            <label
               htmlFor="shipping_address"
               className="mb-1.5 block text-sm font-medium text-slate-700"
             >
