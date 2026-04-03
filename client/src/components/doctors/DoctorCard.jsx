@@ -1,4 +1,14 @@
-import { BriefcaseBusiness, Mail, Phone, Star, Stethoscope } from "lucide-react";
+import Link from "next/link";
+import {
+  Award,
+  BriefcaseBusiness,
+  Calendar,
+  Clock,
+  Mail,
+  Phone,
+  Star,
+  Users,
+} from "lucide-react";
 
 const resolveProfileImageUrl = (profileImagePath) => {
   if (!profileImagePath) return null;
@@ -7,7 +17,8 @@ const resolveProfileImageUrl = (profileImagePath) => {
     return profileImagePath;
   }
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   try {
     const origin = new URL(apiBase).origin;
@@ -39,86 +50,164 @@ const formatConsultationFee = (fee) => {
   return `Rs. ${amount.toLocaleString()}`;
 };
 
+const getTags = (specialization) => {
+  if (!specialization) return [];
+
+  return specialization
+    .split(/,|&|\//)
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+};
+
 const DoctorCard = ({ doctor }) => {
   const profileImageUrl = resolveProfileImageUrl(doctor.user?.profile_image);
+  const doctorName = doctor.user?.full_name || "Doctor";
+  const doctorId = doctor.user?.user_id;
+  const tagList = getTags(doctor.specialization);
+  const isTopRated = Number(doctor.rating || 0) >= 4.8;
+
+  const badgeText = isTopRated
+    ? "Top Rated"
+    : doctor.is_available
+      ? "Available"
+      : null;
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative bg-linear-to-br from-teal-50 to-cyan-50 p-5 pb-12">
+        {badgeText ? (
+          <span className="absolute right-3 top-3 rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {badgeText}
+          </span>
+        ) : null}
+
+        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <Award className="h-3 w-3 text-teal-600" />
+          <span>{doctor.education || "Verified doctor profile"}</span>
+        </div>
+      </div>
+
+      <div className="relative -mt-9 px-5">
+        <div className="flex h-18 w-18 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 text-lg font-bold text-teal-700 shadow-sm">
           {profileImageUrl ? (
             <img
               src={profileImageUrl}
-              alt={doctor.user?.full_name || "Doctor"}
-              className="h-12 w-12 rounded-lg object-cover"
+              alt={doctorName}
+              className="h-full w-full object-cover"
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
             />
-          ) : null}
+          ) : (
+            <span>{getDoctorInitials(doctorName)}</span>
+          )}
+        </div>
+      </div>
 
-          {!profileImageUrl ? (
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-100 text-xs font-semibold text-teal-700">
-              {getDoctorInitials(doctor.user?.full_name)}
-            </div>
-          ) : null}
+      <div className="p-5 pt-3">
+        <h2 className="text-base font-bold text-slate-900">Dr. {doctorName}</h2>
+        <p className="mt-0.5 text-xs font-semibold text-teal-700">
+          {doctor.specialization || "Dermatology Specialist"}
+        </p>
+        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+          {doctor.bio ||
+            "Experienced skin specialist focused on evidence-based treatment."}
+        </p>
 
-          <div>
-            <h2 className="text-base font-semibold text-slate-900">Dr. {doctor.user?.full_name}</h2>
-            <p className="text-sm text-teal-700">{doctor.specialization || "Specialist"}</p>
+        <div className="mt-4 flex items-center gap-4 border-y border-slate-200 py-3">
+          <div className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 text-amber-500" fill="currentColor" />
+            <span className="text-xs font-bold text-slate-800">
+              {Number(doctor.rating || 0).toFixed(1)}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              ({doctor.total_reviews || 0})
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-slate-700">
+            <BriefcaseBusiness className="h-3.5 w-3.5 text-teal-700" />
+            {doctor.years_of_experience ?? 0} yrs
+          </div>
+          <div className="flex items-center gap-1 text-xs text-slate-700">
+            <Users className="h-3.5 w-3.5 text-teal-700" />
+            {doctor.total_reviews || 0}+ reviews
           </div>
         </div>
 
-        <span
-          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-            doctor.is_available ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-          }`}
-        >
-          {doctor.is_available ? "Available" : "Unavailable"}
-        </span>
-      </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {tagList.length ? (
+            tagList.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+              >
+                {tag}
+              </span>
+            ))
+          ) : (
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              Dermatology
+            </span>
+          )}
+        </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2.5 rounded-xl bg-slate-50 p-3">
-        <div>
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Experience</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-800">
-            <BriefcaseBusiness className="h-4 w-4 text-slate-500" aria-hidden="true" />
-            {doctor.years_of_experience ?? 0} years
+        <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+          <div>
+            <div className="flex items-center gap-1 text-[10px] text-slate-500">
+              <Clock className="h-3 w-3" />
+              <span>
+                {doctor.is_available
+                  ? "Available for appointment"
+                  : "Currently unavailable"}
+              </span>
+            </div>
+            <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-teal-700">
+              <Calendar className="h-3 w-3" />
+              <span>
+                {doctor.is_available
+                  ? "Book your next slot now"
+                  : "Check later for slots"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-500">Consultation</p>
+            <p className="text-sm font-bold text-slate-900">
+              {formatConsultationFee(doctor.consultation_fee)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 space-y-1 text-xs text-slate-500">
+          <p className="flex items-center gap-2">
+            <Mail className="h-3.5 w-3.5 text-slate-400" />
+            {doctor.user?.email || "No email provided"}
+          </p>
+          <p className="flex items-center gap-2">
+            <Phone className="h-3.5 w-3.5 text-slate-400" />
+            {doctor.user?.phone || "No phone provided"}
           </p>
         </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Consultation</p>
-          <p className="mt-1 text-sm font-medium text-slate-800">{formatConsultationFee(doctor.consultation_fee)}</p>
-        </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Rating</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-800">
-            <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
-            {Number(doctor.rating || 0).toFixed(1)} ({doctor.total_reviews || 0})
-          </p>
-        </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Status</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-800">
-            <Stethoscope className="h-4 w-4 text-teal-700" aria-hidden="true" />
-            Approved
-          </p>
-        </div>
-      </div>
 
-      <p className="mt-3 line-clamp-3 text-sm text-slate-600">
-        {doctor.bio || "Experienced skin specialist focused on evidence-based diagnosis and treatment."}
-      </p>
-
-      <div className="mt-3 space-y-1 text-sm text-slate-600">
-        <p className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-slate-500" aria-hidden="true" />
-          {doctor.user?.email || "No email provided"}
-        </p>
-        <p className="flex items-center gap-2">
-          <Phone className="h-4 w-4 text-slate-500" aria-hidden="true" />
-          {doctor.user?.phone || "No phone provided"}
-        </p>
+        <div className="mt-4 flex gap-2">
+          <Link
+            href={doctor.user?.email ? `mailto:${doctor.user.email}` : "#"}
+            className="inline-flex h-9 flex-1 items-center justify-center rounded-lg border border-slate-200 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Contact
+          </Link>
+          <Link
+            href={
+              doctorId
+                ? `/dashboard/appointments?doctorId=${doctorId}`
+                : "/dashboard/appointments"
+            }
+            className="inline-flex h-9 flex-1 items-center justify-center rounded-lg bg-[#0F9EA5] text-xs font-medium text-white transition hover:bg-[#0c878d]"
+          >
+            Book Appointment
+          </Link>
+        </div>
       </div>
     </article>
   );
