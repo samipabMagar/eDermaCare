@@ -115,7 +115,7 @@ const DoctorDirectory = () => {
           />
         </div>
 
-        <section className="sticky top-16 z-30 mt-5 border-y border-slate-200 bg-white/95 backdrop-blur-md">
+        <section className="sticky top-16 z-30 mt-3 border-y border-slate-200 bg-white/95 backdrop-blur-md">
           <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-10">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               <div className="relative w-full md:max-w-md">
