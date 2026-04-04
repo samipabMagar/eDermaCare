@@ -50,6 +50,48 @@ export const appointmentService = {
     }
   },
 
+  async confirmAppointment(appointmentId, payload) {
+    try {
+      const response = await api.patch(
+        `/appointments/${appointmentId}/confirm`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to confirm appointment"),
+      );
+    }
+  },
+
+  async rejectAppointment(appointmentId, payload) {
+    try {
+      const response = await api.patch(
+        `/appointments/${appointmentId}/reject`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to reject appointment"),
+      );
+    }
+  },
+
+  async completeAppointment(appointmentId, payload) {
+    try {
+      const response = await api.patch(
+        `/appointments/${appointmentId}/complete`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to complete appointment"),
+      );
+    }
+  },
+
   async cancelAppointment(appointmentId, cancellationReason) {
     try {
       const payload = cancellationReason

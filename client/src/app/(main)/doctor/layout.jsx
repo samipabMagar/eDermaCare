@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Bell } from "lucide-react";
 import { getProfileFromApi } from "@/services/server/profileService";
 import DoctorSidebar from "@/components/doctor/DoctorSidebar";
 
@@ -46,15 +45,6 @@ export default async function DoctorLayout({ children }) {
                 Here is your practice overview for today.
               </p>
             </div>
-
-            <button
-              type="button"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50"
-              aria-label="Notifications"
-            >
-              <Bell className="h-4.5 w-4.5" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
-            </button>
           </div>
         </header>
 

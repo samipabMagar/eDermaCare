@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useEffect } from "react";
-import { CalendarDays, Clock3, Loader2, Video } from "lucide-react";
+import { useCallback, useEffect } from "react";
+import { CalendarDays, Clock3, Loader2, Video, X } from "lucide-react";
+import { toast } from "react-toastify";
 import DoctorSectionHeader from "@/components/doctor/dashboard/DoctorSectionHeader";
 import { appointmentService } from "@/services/appointmentService";
 
@@ -21,6 +22,12 @@ const APPOINTMENT_STATUS_STYLES = {
   Completed: "bg-green-50 text-green-700 border-green-200",
   Cancelled: "bg-red-50 text-red-700 border-red-200",
   Rejected: "bg-rose-50 text-rose-700 border-rose-200",
+};
+
+const ACTION_TITLES = {
+  confirm: "Confirm Appointment",
+  reject: "Reject Appointment",
+  complete: "Complete Appointment",
 };
 
 const toTitleCase = (value = "") => {
@@ -53,23 +60,94 @@ const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionModal, setActionModal] = useState({
+    open: false,
+    type: null,
+    appointment: null,
+  });
+  const [meetingProvider, setMeetingProvider] = useState("google_meet");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [doctorNotes, setDoctorNotes] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [submittingAction, setSubmittingAction] = useState(false);
+
+  const loadAppointments = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await appointmentService.getMyAppointments();
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch (loadError) {
+      setError(loadError.message || "Failed to load appointments");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadAppointments = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const data = await appointmentService.getMyAppointments();
-        setAppointments(Array.isArray(data) ? data : []);
-      } catch (loadError) {
-        setError(loadError.message || "Failed to load appointments");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadAppointments();
-  }, []);
+  }, [loadAppointments]);
+
+  const closeActionModal = () => {
+    setActionModal({ open: false, type: null, appointment: null });
+    setMeetingProvider("google_meet");
+    setMeetingLink("");
+    setDoctorNotes("");
+    setRejectionReason("");
+    setSubmittingAction(false);
+  };
+
+  const openActionModal = (type, appointment) => {
+    setActionModal({ open: true, type, appointment });
+    setMeetingProvider("google_meet");
+    setMeetingLink("");
+    setDoctorNotes("");
+    setRejectionReason("");
+  };
+
+  const submitAction = async () => {
+    const appointmentId = actionModal.appointment?.appointment_id;
+    if (!appointmentId || !actionModal.type) return;
+
+    try {
+      setSubmittingAction(true);
+
+      if (actionModal.type === "confirm") {
+        if (!meetingLink.trim()) {
+          toast.error("Meeting link is required");
+          return;
+        }
+
+        await appointmentService.confirmAppointment(appointmentId, {
+          meeting_provider: meetingProvider,
+          meeting_link: meetingLink.trim(),
+          doctor_notes: doctorNotes.trim() || undefined,
+        });
+        toast.success("Appointment confirmed");
+      }
+
+      if (actionModal.type === "reject") {
+        await appointmentService.rejectAppointment(appointmentId, {
+          rejection_reason: rejectionReason.trim() || undefined,
+        });
+        toast.success("Appointment rejected");
+      }
+
+      if (actionModal.type === "complete") {
+        await appointmentService.completeAppointment(appointmentId, {
+          doctor_notes: doctorNotes.trim() || undefined,
+        });
+        toast.success("Appointment completed");
+      }
+
+      closeActionModal();
+      await loadAppointments();
+    } catch (actionError) {
+      toast.error(actionError.message || "Failed to update appointment");
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
 
   const filteredAppointments = useMemo(() => {
     if (activeTab === "All") {
@@ -181,20 +259,171 @@ const DoctorAppointmentsPage = () => {
                     </div>
 
                     {appointment.meeting_link ? (
-                      <a
-                        href={appointment.meeting_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={appointment.meeting_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        >
+                          Join Meeting
+                        </a>
+                      </div>
+                    ) : null}
+
+                    {appointment.status === "pending" ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openActionModal("confirm", appointment)
+                          }
+                          className="rounded-xl bg-[#0F9EA5] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0c878d]"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openActionModal("reject", appointment)}
+                          className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {appointment.status === "confirmed" ? (
+                      <button
+                        type="button"
+                        onClick={() => openActionModal("complete", appointment)}
+                        className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
                       >
-                        Join Meeting
-                      </a>
+                        Mark Complete
+                      </button>
                     ) : null}
                   </div>
                 </article>
               );
             })
           )}
+        </div>
+      ) : null}
+
+      {actionModal.open ? (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+          <button
+            type="button"
+            onClick={closeActionModal}
+            className="absolute inset-0 bg-slate-900/45"
+            aria-label="Close"
+          />
+
+          <section className="relative z-10 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  {ACTION_TITLES[actionModal.type]}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  {actionModal.appointment?.patient?.full_name || "Patient"} •{" "}
+                  {formatDate(actionModal.appointment?.scheduled_at)}{" "}
+                  {formatTime(actionModal.appointment?.scheduled_at)}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeActionModal}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-5 py-5">
+              {actionModal.type === "confirm" ? (
+                <>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">
+                      Meeting Provider
+                    </label>
+                    <select
+                      value={meetingProvider}
+                      onChange={(event) =>
+                        setMeetingProvider(event.target.value)
+                      }
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-teal-600"
+                    >
+                      <option value="google_meet">Google Meet</option>
+                      <option value="zoom">Zoom</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">
+                      Meeting Link
+                    </label>
+                    <input
+                      type="url"
+                      value={meetingLink}
+                      onChange={(event) => setMeetingLink(event.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-teal-600"
+                    />
+                  </div>
+                </>
+              ) : null}
+
+              {actionModal.type === "reject" ? (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Rejection Reason (optional)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={rejectionReason}
+                    onChange={(event) => setRejectionReason(event.target.value)}
+                    placeholder="Briefly explain why this appointment is rejected"
+                    className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-teal-600"
+                  />
+                </div>
+              ) : null}
+
+              {actionModal.type === "complete" ||
+              actionModal.type === "confirm" ? (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Doctor Notes (optional)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={doctorNotes}
+                    onChange={(event) => setDoctorNotes(event.target.value)}
+                    placeholder="Add any consultation notes"
+                    className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-teal-600"
+                  />
+                </div>
+              ) : null}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={closeActionModal}
+                  className="flex-1 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={submittingAction}
+                  onClick={submitAction}
+                  className="flex-1 rounded-lg bg-[#0F9EA5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0c878d] disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  {submittingAction ? "Saving..." : "Confirm"}
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       ) : null}
     </div>
