@@ -6,6 +6,7 @@ import { Calendar, Clock, MessageCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import { appointmentService } from "@/services/appointmentService";
 import { DOCTORS_ROUTE } from "@/constants/routes";
+import AppointmentDetailsModal from "@/components/appointments/AppointmentDetailsModal";
 
 const tabs = ["All", "Pending", "Confirmed", "Completed", "Cancelled"];
 
@@ -22,6 +23,7 @@ export default function DashboardAppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [cancelingId, setCancelingId] = useState(null);
+  const [detailsAppointmentId, setDetailsAppointmentId] = useState(null);
 
   useEffect(() => {
     const loadAppointments = async () => {
@@ -154,6 +156,16 @@ export default function DashboardAppointmentsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDetailsAppointmentId(appointment.appointment_id)
+                    }
+                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    View Details
+                  </button>
+
                   {normalizedStatus === "completed" && (
                     <button
                       type="button"
@@ -190,6 +202,13 @@ export default function DashboardAppointmentsPage() {
           </div>
         )}
       </div>
+
+      <AppointmentDetailsModal
+        open={Boolean(detailsAppointmentId)}
+        appointmentId={detailsAppointmentId}
+        viewerRole="user"
+        onClose={() => setDetailsAppointmentId(null)}
+      />
     </div>
   );
 }

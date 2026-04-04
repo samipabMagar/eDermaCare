@@ -67,6 +67,11 @@ const appointmentModel = connection.define(
       allowNull: true,
     },
 
+    patient_notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     cancelled_by: {
       type: DataTypes.ENUM("patient", "doctor", "admin"),
       allowNull: true,

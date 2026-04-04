@@ -211,6 +211,7 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
       await appointmentService.createAppointment({
         doctor_user_id: doctorUserId,
         scheduled_at: scheduledAtIso,
+        patient_notes: reason.trim() || undefined,
       });
       setStep("success");
       toast.success("Appointment booked successfully");

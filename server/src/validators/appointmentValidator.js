@@ -14,6 +14,14 @@ export const createAppointmentSchema = z.object({
       invalid_type_error: "scheduled_at must be an ISO datetime string",
     })
     .datetime("scheduled_at must be a valid ISO datetime"),
+
+  patient_notes: z
+    .string({
+      invalid_type_error: "patient_notes must be a string",
+    })
+    .trim()
+    .max(2000, "patient_notes must not exceed 2000 characters")
+    .optional(),
 });
 
 export const confirmAppointmentSchema = z.object({

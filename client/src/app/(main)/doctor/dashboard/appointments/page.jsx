@@ -6,6 +6,7 @@ import { CalendarDays, Clock3, Loader2, Video, X } from "lucide-react";
 import { toast } from "react-toastify";
 import DoctorSectionHeader from "@/components/doctor/dashboard/DoctorSectionHeader";
 import { appointmentService } from "@/services/appointmentService";
+import AppointmentDetailsModal from "@/components/appointments/AppointmentDetailsModal";
 
 const APPOINTMENT_TABS = [
   "All",
@@ -70,6 +71,7 @@ const DoctorAppointmentsPage = () => {
   const [doctorNotes, setDoctorNotes] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [submittingAction, setSubmittingAction] = useState(false);
+  const [detailsAppointmentId, setDetailsAppointmentId] = useState(null);
 
   const loadAppointments = useCallback(async () => {
     try {
@@ -301,6 +303,16 @@ const DoctorAppointmentsPage = () => {
                         Mark Complete
                       </button>
                     ) : null}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDetailsAppointmentId(appointment.appointment_id)
+                      }
+                      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    >
+                      View Details
+                    </button>
                   </div>
                 </article>
               );
@@ -426,6 +438,13 @@ const DoctorAppointmentsPage = () => {
           </section>
         </div>
       ) : null}
+
+      <AppointmentDetailsModal
+        open={Boolean(detailsAppointmentId)}
+        appointmentId={detailsAppointmentId}
+        viewerRole="doctor"
+        onClose={() => setDetailsAppointmentId(null)}
+      />
     </div>
   );
 };

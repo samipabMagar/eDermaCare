@@ -50,6 +50,17 @@ export const appointmentService = {
     }
   },
 
+  async getAppointmentById(appointmentId) {
+    try {
+      const response = await api.get(`/appointments/${appointmentId}`);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to load appointment details"),
+      );
+    }
+  },
+
   async confirmAppointment(appointmentId, payload) {
     try {
       const response = await api.patch(

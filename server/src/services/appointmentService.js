@@ -53,7 +53,7 @@ class AppointmentService {
   }
 
   async createAppointment(patientUserId, appointmentData) {
-    const { doctor_user_id, scheduled_at } = appointmentData;
+    const { doctor_user_id, scheduled_at, patient_notes } = appointmentData;
 
     if (Number(patientUserId) === Number(doctor_user_id)) {
       throw new Error("You cannot book an appointment with yourself");
@@ -110,6 +110,7 @@ class AppointmentService {
       patient_user_id: patientUserId,
       doctor_user_id,
       scheduled_at: scheduledAt,
+      patient_notes: patient_notes || null,
       status: "pending",
     });
 
