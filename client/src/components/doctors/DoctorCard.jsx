@@ -86,7 +86,7 @@ const formatEducationLabel = (education) => {
   return "Verified doctor profile";
 };
 
-const DoctorCard = ({ doctor }) => {
+const DoctorCard = ({ doctor, onBookAppointment }) => {
   const profileImageUrl = resolveProfileImageUrl(doctor.user?.profile_image);
   const doctorName = doctor.user?.full_name || "Doctor";
   const doctorId = doctor.user?.user_id;
@@ -224,16 +224,14 @@ const DoctorCard = ({ doctor }) => {
           >
             Contact
           </Link>
-          <Link
-            href={
-              doctorId
-                ? `/dashboard/appointments?doctorId=${doctorId}`
-                : "/dashboard/appointments"
-            }
-            className="inline-flex h-9 flex-1 items-center justify-center rounded-lg bg-[#0F9EA5] text-xs font-medium text-white transition hover:bg-[#0c878d]"
+          <button
+            type="button"
+            onClick={() => onBookAppointment?.(doctor)}
+            disabled={!doctorId || !doctor.is_available}
+            className="inline-flex h-9 flex-1 items-center justify-center rounded-lg bg-[#0F9EA5] text-xs font-medium text-white transition hover:bg-[#0c878d] disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             Book Appointment
-          </Link>
+          </button>
         </div>
       </div>
     </article>

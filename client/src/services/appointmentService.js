@@ -9,6 +9,17 @@ const getApiErrorMessage = (error, fallbackMessage) => {
 };
 
 export const appointmentService = {
+  async createAppointment(payload) {
+    try {
+      const response = await api.post("/appointments", payload);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to create appointment"),
+      );
+    }
+  },
+
   async getMyAppointments() {
     try {
       const response = await api.get("/appointments/my");

@@ -5,6 +5,7 @@ import { ChevronDown, Search, Users } from "lucide-react";
 import { doctorService } from "@/services/doctorService";
 import DoctorCard from "@/components/doctors/DoctorCard";
 import DoctorDirectoryHeader from "@/components/doctors/DoctorDirectoryHeader";
+import BookAppointmentModal from "@/components/doctors/BookAppointmentModal";
 
 const DoctorDirectory = () => {
   const [doctors, setDoctors] = useState([]);
@@ -14,6 +15,7 @@ const DoctorDirectory = () => {
   const [selectedSpec, setSelectedSpec] = useState("All");
   const [sortBy, setSortBy] = useState("Rating");
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [bookingDoctor, setBookingDoctor] = useState(null);
 
   useEffect(() => {
     const loadDoctors = async () => {
@@ -243,12 +245,22 @@ const DoctorDirectory = () => {
             ) : (
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filteredDoctors.map((doctor) => (
-                  <DoctorCard key={doctor.profile_id} doctor={doctor} />
+                  <DoctorCard
+                    key={doctor.profile_id}
+                    doctor={doctor}
+                    onBookAppointment={setBookingDoctor}
+                  />
                 ))}
               </div>
             )}
           </div>
         ) : null}
+
+        <BookAppointmentModal
+          doctor={bookingDoctor}
+          open={Boolean(bookingDoctor)}
+          onClose={() => setBookingDoctor(null)}
+        />
       </div>
     </section>
   );
