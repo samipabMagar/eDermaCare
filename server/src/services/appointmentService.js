@@ -1,8 +1,11 @@
-import { Op, where } from "sequelize";
+import { Op, where, fn, col } from "sequelize";
 import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
 import doctorProfileModel from "../models/doctorProfileModel.js";
-import { sendAppointmentConfirmationEmail } from "../utils/emailService.js";
+import {
+  sendAppointmentConfirmationEmail,
+  sendAppointmentRejectionEmail,
+} from "../utils/emailService.js";
 import { format } from "date-fns";
 
 class AppointmentService {
@@ -33,9 +36,7 @@ class AppointmentService {
         status: {
           [Op.in]: ["pending", "confirmed"],
         },
-        [Op.and]: [
-          where(where.fn("DATE", where.col("scheduled_at")), dateString),
-        ],
+        [Op.and]: [where(fn("DATE", col("scheduled_at")), dateString)],
       },
       order: [["scheduled_at", "ASC"]],
     });
@@ -388,6 +389,23 @@ class AppointmentService {
       meeting_provider: null,
       meeting_link: null,
     });
+
+    const appointmentDateTime = format(
+      new Date(appointment.scheduled_at),
+      "MMMM d, yyyy 'at' h:mm a",
+    );
+
+    try {
+      await sendAppointmentRejectionEmail({
+        patientEmail: appointment.patient.email,
+        patientName: appointment.patient.full_name,
+        doctorName: appointment.doctor.full_name,
+        appointmentDateTime,
+        rejectionReason: rejection_reason || "No reason was provided.",
+      });
+    } catch (error) {
+      console.error("Failed to send appointment rejection email:", error);
+    }
 
     return appointment;
   }

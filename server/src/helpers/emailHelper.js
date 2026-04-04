@@ -234,3 +234,74 @@ export const appointmentConfirmedEmailTemplate = ({
     </table>
 </body>
 </html>`;
+
+export const appointmentRejectedEmailTemplate = ({
+  patientName,
+  doctorName,
+  appointmentDateTime,
+  rejectionReason,
+}) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Rejected</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0; text-align: center;">
+                <table role="presentation" style="width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #2FA4A9 0%, #288A8E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">eDermaCare</h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px 40px 30px;">
+                            <h2 style="margin: 0 0 18px; color: #1f2937; font-size: 24px; font-weight: 600; text-align: center;">Appointment Update</h2>
+
+                            <p style="margin: 0 0 20px; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                                Hello ${patientName}, your appointment request with Dr. ${doctorName} on ${appointmentDateTime} was not approved.
+                            </p>
+
+                            <div style="margin: 25px 0; padding: 20px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+                                <p style="margin: 0 0 8px; color: #991b1b; font-weight: 600; font-size: 14px;">Reason</p>
+                                <p style="margin: 0; color: #7f1d1d; font-size: 15px; line-height: 1.6;">
+                                    ${rejectionReason || "No reason was provided."}
+                                </p>
+                            </div>
+
+                            <p style="margin: 0 0 16px; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                                Please open eDermaCare to book another appointment slot with this doctor or choose another available specialist.
+                            </p>
+
+                            <table role="presentation" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="${process.env.CLIENT_URL || "#"}/doctors" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #2FA4A9 0%, #288A8E 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                                            Browse Doctors
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 30px; background-color: #f9fafb; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                                eDermaCare - Your Trusted Dermatology Platform
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                © ${new Date().getFullYear()} eDermaCare. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
