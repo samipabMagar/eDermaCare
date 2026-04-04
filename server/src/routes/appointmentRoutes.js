@@ -58,6 +58,14 @@ router.patch(
   validate(cancelAppointmentSchema),
   appointmentController.cancelAppointment,
 );
+
+router.get(
+  "/doctor/:doctorUserId/booked-slots",
+  authenticate,
+  authorize("user"),
+  appointmentController.getDoctorBookedSlots,
+);
+
 router.get(
   "/:appointmentId",
   authenticate,

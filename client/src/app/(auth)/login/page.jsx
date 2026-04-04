@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/validators/authSchemas";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import AuthLayout from "@/components/auth/AuthLayout";
 import LoginErrorAlert from "@/components/auth/LoginErrorAlert";
@@ -17,6 +17,7 @@ import { loginUser } from "@/store/thunks/authThunks";
 const LoginPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoading, error } = useSelector((state) => state.auth);
   const guestCartItems = useSelector((state) => state.cart?.items ?? []);
 
@@ -55,7 +56,13 @@ const LoginPage = () => {
         // Continue login redirect even if cart merge fails.
       }
 
-      router.push(HOME_ROUTE);
+      const requestedNextPath = searchParams.get("next");
+      const safeRedirectPath =
+        requestedNextPath && requestedNextPath.startsWith("/")
+          ? requestedNextPath
+          : HOME_ROUTE;
+
+      router.push(safeRedirectPath);
     }
   };
 

@@ -1,6 +1,29 @@
 import appointmentService from "../services/appointmentService.js";
 
 class AppointmentController {
+  async getDoctorBookedSlots(req, res) {
+    try {
+      const { doctorUserId } = req.params;
+      const { date } = req.query;
+
+      const result = await appointmentService.getBookedSlotsByDoctorAndDate(
+        doctorUserId,
+        date,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Booked slots retrieved successfully",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to retrieve booked slots",
+      });
+    }
+  }
+
   async createAppointment(req, res) {
     try {
       const patientUserId = req.user.id;

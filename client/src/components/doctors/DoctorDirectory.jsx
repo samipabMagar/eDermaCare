@@ -2,12 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, Users } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { doctorService } from "@/services/doctorService";
 import DoctorCard from "@/components/doctors/DoctorCard";
 import DoctorDirectoryHeader from "@/components/doctors/DoctorDirectoryHeader";
 import BookAppointmentModal from "@/components/doctors/BookAppointmentModal";
+import { LOGIN_ROUTE } from "@/constants/routes";
 
 const DoctorDirectory = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const authState = useSelector((state) => state.auth);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -105,6 +112,20 @@ const DoctorDirectory = () => {
 
     return next;
   }, [doctors, searchQuery, selectedSpec, sortBy]);
+
+  const handleBookAppointment = (doctor) => {
+    const isAuthenticated =
+      Boolean(authState?.user) || authState?.isAuthenticated === true;
+
+    if (!isAuthenticated) {
+      toast.info("Please login to book an appointment");
+      const nextRoute = pathname || "/doctors";
+      router.push(`${LOGIN_ROUTE}?next=${encodeURIComponent(nextRoute)}`);
+      return;
+    }
+
+    setBookingDoctor(doctor);
+  };
 
   return (
     <section className="bg-slate-50 pb-10">
@@ -248,7 +269,7 @@ const DoctorDirectory = () => {
                   <DoctorCard
                     key={doctor.profile_id}
                     doctor={doctor}
-                    onBookAppointment={setBookingDoctor}
+                    onBookAppointment={handleBookAppointment}
                   />
                 ))}
               </div>

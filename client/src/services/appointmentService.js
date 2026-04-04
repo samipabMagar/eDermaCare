@@ -14,9 +14,30 @@ export const appointmentService = {
       const response = await api.post("/appointments", payload);
       return response.data?.data ?? null;
     } catch (error) {
-      throw new Error(
+      const nextError = new Error(
         getApiErrorMessage(error, "Failed to create appointment"),
       );
+      nextError.status = error.response?.status;
+      throw nextError;
+    }
+  },
+
+  async getDoctorBookedSlots(doctorUserId, date) {
+    try {
+      const response = await api.get(
+        `/appointments/doctor/${doctorUserId}/booked-slots`,
+        {
+          params: { date },
+        },
+      );
+
+      return response.data?.data?.booked_slots ?? [];
+    } catch (error) {
+      const nextError = new Error(
+        getApiErrorMessage(error, "Failed to load booked slots"),
+      );
+      nextError.status = error.response?.status;
+      throw nextError;
     }
   },
 

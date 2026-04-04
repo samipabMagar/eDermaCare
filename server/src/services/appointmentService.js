@@ -6,6 +6,51 @@ import { sendAppointmentConfirmationEmail } from "../utils/emailService.js";
 import { format } from "date-fns";
 
 class AppointmentService {
+  async getBookedSlotsByDoctorAndDate(doctorUserId, dateString) {
+    const parsedDoctorId = Number(doctorUserId);
+
+    if (!Number.isInteger(parsedDoctorId) || parsedDoctorId <= 0) {
+      throw new Error("Invalid doctor user id");
+    }
+
+    const parsedDate = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(parsedDate.getTime())) {
+      throw new Error("Invalid date format. Use YYYY-MM-DD");
+    }
+
+    const doctorUser = await userModel.findByPk(parsedDoctorId, {
+      attributes: ["user_id", "role"],
+    });
+
+    if (!doctorUser || doctorUser.role !== "doctor") {
+      throw new Error("Selected doctor does not exist");
+    }
+
+    const bookedAppointments = await appointmentModel.findAll({
+      attributes: ["scheduled_at"],
+      where: {
+        doctor_user_id: parsedDoctorId,
+        status: {
+          [Op.in]: ["pending", "confirmed"],
+        },
+        [Op.and]: [
+          where(where.fn("DATE", where.col("scheduled_at")), dateString),
+        ],
+      },
+      order: [["scheduled_at", "ASC"]],
+    });
+
+    const bookedSlots = bookedAppointments.map((appointment) =>
+      format(new Date(appointment.scheduled_at), "HH:mm"),
+    );
+
+    return {
+      doctor_user_id: parsedDoctorId,
+      date: dateString,
+      booked_slots: bookedSlots,
+    };
+  }
+
   async createAppointment(patientUserId, appointmentData) {
     const { doctor_user_id, scheduled_at } = appointmentData;
 
@@ -431,7 +476,7 @@ class AppointmentService {
     });
 
     const total = result.count;
-    const totalPages = Math.ceil(total/safeLimit) || 1;
+    const totalPages = Math.ceil(total / safeLimit) || 1;
 
     return {
       appointments: result.rows,
@@ -440,8 +485,8 @@ class AppointmentService {
         limit: safeLimit,
         total,
         totalPages,
-      }
-    }
+      },
+    };
   }
 
   async getAppointmentById(currentUserId, currentUserRole, appointmentId) {
@@ -456,23 +501,29 @@ class AppointmentService {
           model: userModel,
           as: "doctor",
           attributes: ["user_id", "full_name", "email"],
-        }
-      ]
-    })
+        },
+      ],
+    });
 
-    if(!appointment) {
+    if (!appointment) {
       throw new Error("Appointment not found");
     }
 
-    if(currentUserRole === "admin") {
+    if (currentUserRole === "admin") {
       return appointment;
     }
 
-    if(currentUserRole === "user" && Number(appointment.patient_user_id) === Number(currentUserId)) {
+    if (
+      currentUserRole === "user" &&
+      Number(appointment.patient_user_id) === Number(currentUserId)
+    ) {
       return appointment;
     }
 
-    if(currentUserRole === "doctor" && Number(appointment.doctor_user_id) === Number(currentUserId)){
+    if (
+      currentUserRole === "doctor" &&
+      Number(appointment.doctor_user_id) === Number(currentUserId)
+    ) {
       return appointment;
     }
 

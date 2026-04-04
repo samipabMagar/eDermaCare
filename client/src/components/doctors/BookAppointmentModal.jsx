@@ -115,6 +115,8 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
   const [selectedTime, setSelectedTime] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unavailableSlots, setUnavailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const doctorName = doctor?.user?.full_name || "Doctor";
   const doctorSpecialization =
@@ -127,6 +129,45 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
     if (!selectedDate || !selectedTime) return "";
     return new Date(`${selectedDate}T${selectedTime}:00`).toISOString();
   }, [selectedDate, selectedTime]);
+
+  useEffect(() => {
+    if (!open || !doctorUserId || !selectedDate) {
+      setUnavailableSlots([]);
+      return;
+    }
+
+    const loadUnavailableSlots = async () => {
+      try {
+        setLoadingSlots(true);
+        const slots = await appointmentService.getDoctorBookedSlots(
+          doctorUserId,
+          selectedDate,
+        );
+
+        const normalizedSlots = slots
+          .map((slot) => String(slot).slice(0, 5))
+          .filter(Boolean);
+
+        setUnavailableSlots(normalizedSlots);
+
+        if (selectedTime && normalizedSlots.includes(selectedTime)) {
+          setSelectedTime("");
+        }
+      } catch (error) {
+        setUnavailableSlots([]);
+        if (error.status === 401 || error.status === 403) {
+          toast.info("Please login to continue booking");
+          onClose();
+          return;
+        }
+        toast.error(error.message || "Failed to load time slots");
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    loadUnavailableSlots();
+  }, [doctorUserId, open, onClose, selectedDate, selectedTime]);
 
   useEffect(() => {
     if (!open) return;
@@ -153,6 +194,8 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
       setSelectedDate("");
       setSelectedTime("");
       setReason("");
+      setUnavailableSlots([]);
+      setLoadingSlots(false);
       setLoading(false);
     }
   }, [open]);
@@ -172,6 +215,11 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
       setStep("success");
       toast.success("Appointment booked successfully");
     } catch (error) {
+      if (error.status === 401 || error.status === 403) {
+        toast.info("Please login to book an appointment");
+        onClose();
+        return;
+      }
       toast.error(error.message || "Failed to book appointment");
     } finally {
       setLoading(false);
@@ -239,21 +287,38 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
                   </label>
 
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {TIME_SLOTS.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedTime(slot)}
-                        className={`rounded-lg border px-2 py-2 text-xs font-medium transition ${
-                          selectedTime === slot
-                            ? "border-teal-600 bg-teal-600 text-white"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-teal-300"
-                        }`}
-                      >
-                        {formatTimeLabel(slot)}
-                      </button>
-                    ))}
+                    {TIME_SLOTS.map((slot) => {
+                      const isBooked = unavailableSlots.includes(slot);
+
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          disabled={isBooked || loadingSlots}
+                          onClick={() => setSelectedTime(slot)}
+                          className={`rounded-lg border px-2 py-2 text-xs font-medium transition ${
+                            isBooked
+                              ? "cursor-not-allowed border-transparent bg-slate-100 text-slate-400 line-through"
+                              : selectedTime === slot
+                                ? "border-teal-600 bg-teal-600 text-white"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-teal-300"
+                          }`}
+                        >
+                          {formatTimeLabel(slot)}
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {loadingSlots ? (
+                    <p className="text-[11px] text-slate-500">
+                      Loading available slots...
+                    </p>
+                  ) : unavailableSlots.length ? (
+                    <p className="text-[11px] text-slate-500">
+                      Crossed-out slots are already booked.
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
