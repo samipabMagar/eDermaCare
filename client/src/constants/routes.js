@@ -11,6 +11,7 @@ export const USER_DASHBOARD_ORDER_HISTORY_ROUTE = "/dashboard/order-history";
 export const USER_DASHBOARD_PAYMENTS_ROUTE = "/dashboard/payments";
 export const USER_PROFILE_ROUTE = "/dashboard/profile";
 export const DOCTOR_DASHBOARD_ROUTE = "/doctor/dashboard";
+export const DOCTOR_APPOINTMENTS_ROUTE = "/doctor/dashboard/appointments";
 export const DOCTOR_PROFILE_ROUTE = "/doctor/dashboard/profile";
 
 // Admin Routes
@@ -35,6 +36,7 @@ export const ROUTES = {
   USER_DASHBOARD_PAYMENTS: USER_DASHBOARD_PAYMENTS_ROUTE,
   USER_PROFILE: USER_PROFILE_ROUTE,
   DOCTOR_DASHBOARD: DOCTOR_DASHBOARD_ROUTE,
+  DOCTOR_APPOINTMENTS: DOCTOR_APPOINTMENTS_ROUTE,
   DOCTOR_PROFILE: DOCTOR_PROFILE_ROUTE,
   // Admin
   ADMIN_DASHBOARD: ADMIN_DASHBOARD_ROUTE,

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { Bell } from "lucide-react";
 import { getProfileFromApi } from "@/services/server/profileService";
 import DoctorSidebar from "@/components/doctor/DoctorSidebar";
 
@@ -33,7 +34,31 @@ export default async function DoctorLayout({ children }) {
 
       <div className="relative z-10 flex w-full flex-col lg:pl-72">
         <DoctorSidebar />
-        <main className="w-full px-4 py-3 sm:px-6">{children}</main>
+
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-base font-semibold text-slate-900 sm:text-lg">
+                Welcome back, Dr.{" "}
+                {currentUser.full_name?.split(" ")[0] || "Doctor"}
+              </h1>
+              <p className="text-xs text-slate-500 sm:text-sm">
+                Here is your practice overview for today.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+              aria-label="Notifications"
+            >
+              <Bell className="h-4.5 w-4.5" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
+            </button>
+          </div>
+        </header>
+
+        <main className="w-full px-4 py-4 sm:px-6">{children}</main>
       </div>
     </div>
   );
