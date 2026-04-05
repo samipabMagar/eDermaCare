@@ -20,6 +20,7 @@ const ProductCatalog = () => {
     isLoading,
     error,
     products,
+    pagination,
     setSearchDraft,
     handleFilterChange,
     handleResetFilters,
@@ -27,7 +28,7 @@ const ProductCatalog = () => {
 
   return (
     <div className="relative min-h-screen bg-slate-50">
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#165558] via-[#2FA4A9] to-[#1B8B90]">
+      <section className="relative overflow-hidden bg-linear-to-r from-[#165558] via-[#2FA4A9] to-[#1B8B90]">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-8 left-0 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
 
@@ -79,7 +80,12 @@ const ProductCatalog = () => {
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
           />
-          <ProductResultsGrid isLoading={isLoading} products={products} />
+          <ProductResultsGrid
+            isLoading={isLoading}
+            products={products}
+            pagination={pagination}
+            onPageChange={(page) => handleFilterChange("page", page)}
+          />
         </div>
       </main>
     </div>

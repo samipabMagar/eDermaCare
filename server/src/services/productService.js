@@ -14,6 +14,8 @@ class ProductService {
       isActive,
       brandId,
       sort,
+      page,
+      limit,
     } = filters;
     const whereClause = {};
 
@@ -57,33 +59,78 @@ class ProductService {
       whereClause.is_active = isActive;
     }
 
-    const products = await productModel.findAll({
+    const include = [
+      {
+        model: brandModel,
+        as: "brand",
+        attributes: ["brand_id", "name", "logo_url"],
+      },
+    ];
+
+    const parsedPage = Number.parseInt(page, 10);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const hasPagination =
+      Number.isInteger(parsedPage) &&
+      parsedPage > 0 &&
+      Number.isInteger(parsedLimit) &&
+      parsedLimit > 0;
+
+    if (!hasPagination) {
+      const products = await productModel.findAll({
+        where: whereClause,
+        include,
+        order: [orderBy],
+      });
+
+      return {
+        products,
+        pagination: null,
+      };
+    }
+
+    const offset = (parsedPage - 1) * parsedLimit;
+    const { count, rows } = await productModel.findAndCountAll({
       where: whereClause,
-      include: [
-        {
-          model: brandModel,
-          as: "brand",
-          attributes: ["brand_id", "name", "logo_url"],
-        },
-      ],
+      include,
       order: [orderBy],
+      limit: parsedLimit,
+      offset,
+      distinct: true,
     });
 
-    return products;
+    const totalPages = Math.max(1, Math.ceil(count / parsedLimit));
+
+    return {
+      products: rows,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        totalItems: count,
+        totalPages,
+        hasPrevPage: parsedPage > 1,
+        hasNextPage: parsedPage < totalPages,
+      },
+    };
   }
 
-  async getProductById(productId){
+  async getProductById(productId) {
     const product = await productModel.findByPk(productId, {
       include: [
         {
           model: brandModel,
           as: "brand",
-          attributes: ["brand_id", "name", "description", "logo_url", "website_url"]
-        }
-      ]
-    })
+          attributes: [
+            "brand_id",
+            "name",
+            "description",
+            "logo_url",
+            "website_url",
+          ],
+        },
+      ],
+    });
 
-    if(!product){
+    if (!product) {
       throw new Error("Product not found");
     }
 

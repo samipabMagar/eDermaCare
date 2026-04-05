@@ -1,10 +1,38 @@
 import ProductCard from "@/components/products/ProductCard";
 import { PackageSearch } from "lucide-react";
 
+const getVisiblePages = (currentPage, totalPages) => {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 5];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
+  }
+
+  return [
+    currentPage - 2,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    currentPage + 2,
+  ];
+};
+
 // Skeleton card shown while loading
 const SkeletonCard = () => (
   <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-    <div className="h-52 bg-gradient-to-br from-slate-100 to-slate-200" />
+    <div className="h-52 bg-linear-to-br from-slate-100 to-slate-200" />
     <div className="space-y-3 p-4">
       <div className="flex justify-between">
         <div className="h-3 w-16 rounded-full bg-slate-100" />
@@ -21,7 +49,12 @@ const SkeletonCard = () => (
   </div>
 );
 
-const ProductResultsGrid = ({ isLoading, products }) => {
+const ProductResultsGrid = ({
+  isLoading,
+  products,
+  pagination,
+  onPageChange,
+}) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -64,6 +97,52 @@ const ProductResultsGrid = ({ isLoading, products }) => {
           <ProductCard key={product.product_id} product={product} />
         ))}
       </div>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
+          <button
+            type="button"
+            onClick={() => onPageChange(pagination.page - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {getVisiblePages(pagination.page, pagination.totalPages).map(
+              (pageNumber) => {
+                const isCurrent = pagination.page === pageNumber;
+
+                return (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => onPageChange(pageNumber)}
+                    aria-current={isCurrent ? "page" : undefined}
+                    className={`min-w-9 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                      isCurrent
+                        ? "bg-[#2FA4A9] text-white"
+                        : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              },
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onPageChange(pagination.page + 1)}
+            disabled={!pagination.hasNextPage}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

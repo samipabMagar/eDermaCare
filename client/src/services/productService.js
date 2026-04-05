@@ -18,6 +18,8 @@ const buildQueryParams = (filters = {}) => {
   if (filters.minPrice) params.minPrice = filters.minPrice;
   if (filters.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters.sort) params.sort = filters.sort;
+  if (filters.page) params.page = filters.page;
+  if (filters.limit) params.limit = filters.limit;
 
   return params;
 };
@@ -29,7 +31,10 @@ export const productService = {
         params: buildQueryParams(filters),
       });
 
-      return response.data?.data ?? [];
+      return {
+        products: response.data?.data ?? [],
+        pagination: response.data?.pagination ?? null,
+      };
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to load products"));
     }
@@ -54,4 +59,3 @@ export const productService = {
     }
   },
 };
-

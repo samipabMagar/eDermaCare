@@ -10,7 +10,10 @@ const initialFilters = {
   maxPrice: "",
   search: "",
   sort: "newest",
+  page: "1",
 };
+
+const PAGE_SIZE = 9;
 
 const useProductCatalog = () => {
   const router = useRouter();
@@ -18,6 +21,7 @@ const useProductCatalog = () => {
   const searchParams = useSearchParams();
 
   const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [brands, setBrands] = useState([]);
   const [searchDraft, setSearchDraft] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +36,7 @@ const useProductCatalog = () => {
       maxPrice: searchParams.get("maxPrice") ?? "",
       search: searchParams.get("search") ?? "",
       sort: searchParams.get("sort") ?? initialFilters.sort,
+      page: searchParams.get("page") ?? initialFilters.page,
     };
   }, [searchParams]);
 
@@ -58,7 +63,9 @@ const useProductCatalog = () => {
   const fetchBrands = useCallback(async () => {
     try {
       const brandList = await productService.getBrands();
-      const activeBrands = brandList.filter((brand) => brand.is_active !== false);
+      const activeBrands = brandList.filter(
+        (brand) => brand.is_active !== false,
+      );
       setBrands(activeBrands);
     } catch (err) {
       setBrands([]);
@@ -71,11 +78,19 @@ const useProductCatalog = () => {
       setIsLoading(true);
       setError("");
 
-      const productList = await productService.getProducts(activeFilters);
-      const visibleProducts = productList.filter((product) => product.is_active !== false);
+      const { products: productList, pagination: paginationMeta } =
+        await productService.getProducts({
+          ...activeFilters,
+          limit: PAGE_SIZE,
+        });
+      const visibleProducts = productList.filter(
+        (product) => product.is_active !== false,
+      );
       setProducts(visibleProducts);
+      setPagination(paginationMeta);
     } catch (err) {
       setProducts([]);
+      setPagination(null);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -102,14 +117,19 @@ const useProductCatalog = () => {
         return;
       }
 
-      updateQueryParams({ search: normalizedSearch });
+      updateQueryParams({ search: normalizedSearch, page: 1 });
     }, 300);
 
     return () => clearTimeout(debounceTimer);
   }, [searchDraft, filters.search, updateQueryParams]);
 
   const handleFilterChange = (key, value) => {
-    updateQueryParams({ [key]: value });
+    if (key === "page") {
+      updateQueryParams({ page: value });
+      return;
+    }
+
+    updateQueryParams({ [key]: value, page: 1 });
   };
 
   const handleResetFilters = () => {
@@ -124,6 +144,7 @@ const useProductCatalog = () => {
     isLoading,
     error,
     products,
+    pagination,
     setSearchDraft,
     handleFilterChange,
     handleResetFilters,

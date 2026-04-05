@@ -218,6 +218,11 @@ const DoctorAppointmentsPage = () => {
           ) : (
             filteredAppointments.map((appointment) => {
               const appointmentStatus = toTitleCase(appointment.status);
+              const canJoinMeeting =
+                Boolean(appointment.meeting_link) &&
+                !["cancelled", "completed"].includes(
+                  String(appointment.status || "").toLowerCase(),
+                );
 
               return (
                 <article
@@ -225,7 +230,7 @@ const DoctorAppointmentsPage = () => {
                   className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-slate-900">
                           {appointment.patient?.full_name || "Patient"}
@@ -260,8 +265,8 @@ const DoctorAppointmentsPage = () => {
                       </div>
                     </div>
 
-                    {appointment.meeting_link ? (
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 md:min-w-90 md:justify-end">
+                      {canJoinMeeting ? (
                         <a
                           href={appointment.meeting_link}
                           target="_blank"
@@ -270,49 +275,53 @@ const DoctorAppointmentsPage = () => {
                         >
                           Join Meeting
                         </a>
-                      </div>
-                    ) : null}
+                      ) : null}
 
-                    {appointment.status === "pending" ? (
-                      <div className="flex items-center gap-2">
+                      {appointment.status === "pending" ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openActionModal("confirm", appointment)
+                            }
+                            className="rounded-xl bg-[#0F9EA5] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0c878d]"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openActionModal("reject", appointment)
+                            }
+                            className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      ) : null}
+
+                      {appointment.status === "confirmed" ? (
                         <button
                           type="button"
                           onClick={() =>
-                            openActionModal("confirm", appointment)
+                            openActionModal("complete", appointment)
                           }
-                          className="rounded-xl bg-[#0F9EA5] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0c878d]"
+                          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
                         >
-                          Confirm
+                          Mark Complete
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => openActionModal("reject", appointment)}
-                          className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : null}
+                      ) : null}
 
-                    {appointment.status === "confirmed" ? (
                       <button
                         type="button"
-                        onClick={() => openActionModal("complete", appointment)}
-                        className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+                        onClick={() =>
+                          setDetailsAppointmentId(appointment.appointment_id)
+                        }
+                        className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                       >
-                        Mark Complete
+                        View Details
                       </button>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDetailsAppointmentId(appointment.appointment_id)
-                      }
-                      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      View Details
-                    </button>
+                    </div>
                   </div>
                 </article>
               );

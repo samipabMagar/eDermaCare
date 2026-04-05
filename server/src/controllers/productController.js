@@ -12,9 +12,12 @@ class ProductController {
         isActive: req.query.isActive,
         brandId: req.query.brandId,
         sort: req.query.sort,
+        page: req.query.page,
+        limit: req.query.limit,
       };
 
-      const products = await productService.getAllProducts(filters);
+      const { products, pagination } =
+        await productService.getAllProducts(filters);
 
       return res.status(200).json({
         success: true,
@@ -23,6 +26,7 @@ class ProductController {
             ? "Products retrieved successfully"
             : "No products found",
         data: products,
+        pagination,
       });
     } catch (error) {
       return res.status(500).json({
@@ -33,22 +37,22 @@ class ProductController {
   }
 
   // Get product by ID
-  async getProductById(req, res){
+  async getProductById(req, res) {
     try {
       const productId = req.params.id;
 
       const product = await productService.getProductById(productId);
 
-     return res.status(200).json({
-      success: true,
-      message: "Product retrieved successfully",
-      data:product,
-     })
-    } catch(error){
+      return res.status(200).json({
+        success: true,
+        message: "Product retrieved successfully",
+        data: product,
+      });
+    } catch (error) {
       return res.status(404).json({
-        success:false,
+        success: false,
         message: error.message || "Product not found",
-      })
+      });
     }
   }
 
@@ -84,16 +88,19 @@ class ProductController {
   async updateProduct(req, res) {
     try {
       const productId = req.params.id;
-      const updateData =req.body;
+      const updateData = req.body;
 
-      const updatedProduct = await productService.updateProduct(productId, updateData);
+      const updatedProduct = await productService.updateProduct(
+        productId,
+        updateData,
+      );
 
       return res.status(200).json({
         success: true,
         message: "Product updated successfully",
         data: updatedProduct,
-      })
-    }catch(error) {
+      });
+    } catch (error) {
       return res.status(500).json({
         success: false,
         message: error.message || "Failed to update product",
@@ -111,12 +118,12 @@ class ProductController {
       return res.status(200).json({
         success: true,
         message: result.message,
-      })
-    } catch(error){
+      });
+    } catch (error) {
       return res.status(500).json({
         success: false,
         message: error.message || "Failed to delete product",
-      })
+      });
     }
   }
 }
