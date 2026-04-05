@@ -82,7 +82,9 @@ export const adminService = {
       const response = await api.get("/doctors/admin/pending");
       return response.data?.data ?? [];
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, "Failed to fetch pending doctors"));
+      throw new Error(
+        getApiErrorMessage(error, "Failed to fetch pending doctors"),
+      );
     }
   },
 
@@ -109,13 +111,34 @@ export const adminService = {
   async getAllDoctors(filters = {}) {
     try {
       const params = {};
-      if (filters.is_available !== undefined) params.is_available = filters.is_available;
-      if (filters.specialization) params.specialization = filters.specialization;
+      if (filters.is_available !== undefined)
+        params.is_available = filters.is_available;
+      if (filters.specialization)
+        params.specialization = filters.specialization;
 
       const response = await api.get("/doctors", { params });
       return response.data?.data ?? [];
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to fetch doctors"));
+    }
+  },
+
+  // Admin Order Management
+  async getAdminOrders(filters = {}) {
+    try {
+      const params = {};
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.status) params.status = filters.status;
+      if (filters.payment_status)
+        params.payment_status = filters.payment_status;
+      if (filters.search) params.search = filters.search;
+
+      const response = await api.get("/orders", { params });
+
+      return response.data?.data ?? { orders: [], pagination: null };
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to fetch orders"));
     }
   },
 };

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings, User } from "lucide-react";
+import { LayoutDashboard, LogOut,User } from "lucide-react";
 import { authService } from "@/services/authService";
 import {
   ADMIN_DASHBOARD_ROUTE,
@@ -143,14 +143,7 @@ const ProfileMenuModal = ({ currentUser, profileImageUrl, onLoggedOut }) => {
             Dashboard
           </Link>
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen(false)}
-            className="flex cursor-pointer w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-[#e8f7f8] hover:text-[#2FA4A9]"
-          >
-            <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
-            Settings
-          </button>
+         
         </div>
 
         <div className="p-2 border-t border-slate-100">
