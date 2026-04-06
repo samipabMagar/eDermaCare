@@ -9,6 +9,38 @@ const getApiErrorMessage = (error, fallbackMessage) => {
 };
 
 export const adminService = {
+  // User Management
+  async getUsers(filters = {}) {
+    try {
+      const params = {};
+      if (filters.search) params.search = filters.search;
+      if (filters.role) params.role = filters.role;
+      if (filters.isActive !== undefined && filters.isActive !== "") {
+        params.isActive = filters.isActive;
+      }
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+
+      const response = await api.get("/users", { params });
+
+      return {
+        users: response.data?.data ?? [],
+        pagination: response.data?.pagination ?? null,
+      };
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to fetch users"));
+    }
+  },
+
+  async deleteUser(userId) {
+    try {
+      const response = await api.delete(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to delete user"));
+    }
+  },
+
   // Product Management
   async getProducts(filters = {}) {
     try {

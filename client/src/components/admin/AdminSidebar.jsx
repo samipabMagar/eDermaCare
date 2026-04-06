@@ -37,9 +37,9 @@ const AdminSidebar = () => {
     },
     {
       label: "Users",
-      href: null,
+      href: ROUTES.ADMIN_USERS,
       icon: Users,
-      match: "exact",
+      match: "startsWith",
     },
     {
       label: "Doctors",
