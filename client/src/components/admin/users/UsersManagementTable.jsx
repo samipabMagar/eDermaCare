@@ -28,11 +28,33 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
+const resolveProfileImageUrl = (profileImagePath) => {
+  if (!profileImagePath) return null;
+
+  if (/^https?:\/\//i.test(profileImagePath)) {
+    return profileImagePath;
+  }
+
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+  try {
+    const origin = new URL(apiBase).origin;
+    const normalizedPath = profileImagePath.startsWith("/")
+      ? profileImagePath
+      : `/${profileImagePath}`;
+    return `${origin}${normalizedPath}`;
+  } catch {
+    return null;
+  }
+};
+
 const UsersManagementTable = () => {
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -94,6 +116,13 @@ const UsersManagementTable = () => {
 
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, user: null });
+  };
+
+  const handleImageError = (userId) => {
+    setImageErrors((prev) => ({
+      ...prev,
+      [userId]: true,
+    }));
   };
 
   const handleDelete = async () => {
@@ -221,6 +250,11 @@ const UsersManagementTable = () => {
                 const roleClass =
                   roleClassMap[user.role] || "bg-slate-100 text-slate-700";
                 const isAdmin = user.role === "admin";
+                const profileImageUrl = resolveProfileImageUrl(
+                  user.profile_image,
+                );
+                const shouldShowProfileImage =
+                  Boolean(profileImageUrl) && !imageErrors[user.user_id];
 
                 return (
                   <tr
@@ -230,7 +264,16 @@ const UsersManagementTable = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                          <UserRound className="h-4 w-4" />
+                          {shouldShowProfileImage ? (
+                            <img
+                              src={profileImageUrl}
+                              alt={user.full_name || "User"}
+                              className="h-full w-full rounded-full object-cover"
+                              onError={() => handleImageError(user.user_id)}
+                            />
+                          ) : (
+                            <UserRound className="h-4 w-4" />
+                          )}
                         </div>
                         <div>
                           <p className="font-semibold text-slate-900">
