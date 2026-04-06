@@ -180,12 +180,22 @@ class UserController {
   // Admin: Get all users
   async getAllUsers(req, res) {
     try {
-      const users = await userService.getAllUsers(req.query);
+      const filters = {
+        role: req.query.role,
+        isActive: req.query.isActive,
+        search: req.query.search,
+        page: req.query.page,
+        limit: req.query.limit,
+      };
+
+      const { users, pagination } = await userService.getAllUsers(filters);
 
       res.status(200).json({
         success: true,
-        message: "Users retrieved successfully",
+        message:
+          users.length > 0 ? "Users retrieved successfully" : "No users found",
         data: users,
+        pagination,
       });
     } catch (error) {
       res.status(400).json({

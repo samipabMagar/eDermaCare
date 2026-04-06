@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js";
 import doctorProfileModel from "../models/doctorProfileModel.js";
 import connection from "../configs/db.js";
+import { Op } from "sequelize";
 
 // Service for user-related operations
 class UserService {
@@ -157,22 +158,81 @@ class UserService {
 
   // Admin: Get all users
   async getAllUsers(filters = {}) {
+    const { role, isActive, search, page, limit } = filters;
+
     const whereClause = {};
 
-    if (filters.role) {
-      if (!["admin", "doctor", "user"].includes(filters.role)) {
+    if (role) {
+      if (!["admin", "doctor", "user"].includes(role)) {
         throw new Error("Invalid role filter");
       }
-      whereClause.role = filters.role;
+      whereClause.role = role;
     }
 
-    const users = await userModel.findAll({
+    if (isActive !== undefined) {
+      if (!["true", "false", true, false].includes(isActive)) {
+        throw new Error("Invalid isActive filter");
+      }
+      whereClause.is_active = isActive === true || isActive === "true";
+    }
+
+    if (search?.trim()) {
+      const searchTerm = search.trim();
+      whereClause[Op.or] = [
+        { full_name: { [Op.like]: `%${searchTerm}%` } },
+        { email: { [Op.like]: `%${searchTerm}%` } },
+        { phone: { [Op.like]: `%${searchTerm}%` } },
+      ];
+    }
+
+    const parsedPage = Number.parseInt(page, 10);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const hasPagination =
+      Number.isInteger(parsedPage) &&
+      parsedPage > 0 &&
+      Number.isInteger(parsedLimit) &&
+      parsedLimit > 0;
+
+    if (!hasPagination) {
+      const users = await userModel.findAll({
+        where: whereClause,
+        attributes: { exclude: ["password"] },
+        order: [["created_at", "DESC"]],
+      });
+
+      const parsedUsers = users.map((user) => {
+        const userResponse = user.toJSON();
+
+        if (userResponse.address && typeof userResponse.address === "string") {
+          try {
+            userResponse.address = JSON.parse(userResponse.address);
+          } catch (error) {
+            console.error("Failed to parse address:", error);
+          }
+        }
+
+        return userResponse;
+      });
+
+      return {
+        users: parsedUsers,
+        pagination: null,
+      };
+    }
+
+    const offset = (parsedPage - 1) * parsedLimit;
+    const { count, rows } = await userModel.findAndCountAll({
       where: whereClause,
       attributes: { exclude: ["password"] },
       order: [["created_at", "DESC"]],
+      limit: parsedLimit,
+      offset,
+      distinct: true,
     });
 
-    return users.map((user) => {
+    const totalPages = Math.max(1, Math.ceil(count / parsedLimit));
+
+    const parsedUsers = rows.map((user) => {
       const userResponse = user.toJSON();
 
       if (userResponse.address && typeof userResponse.address === "string") {
@@ -185,6 +245,18 @@ class UserService {
 
       return userResponse;
     });
+
+    return {
+      users: parsedUsers,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        totalItems: count,
+        totalPages,
+        hasPrevPage: parsedPage > 1,
+        hasNextPage: parsedPage < totalPages,
+      },
+    };
   }
 
   // Admin: Delete user
