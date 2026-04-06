@@ -176,6 +176,50 @@ class UserController {
       });
     }
   }
+
+  // Admin: Get all users
+  async getAllUsers(req, res) {
+    try {
+      const users = await userService.getAllUsers(req.query);
+
+      res.status(200).json({
+        success: true,
+        message: "Users retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to retrieve users",
+      });
+    }
+  }
+
+  // Admin: Delete user
+  async deleteUser(req, res) {
+    try {
+      const { userId } = req.params;
+      const result = await userService.deleteUserByAdmin(
+        userId,
+        req.user.id,
+        req.user.role,
+      );
+
+      if (result.deletedProfileImage) {
+        deleteOldImage(result.deletedProfileImage);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "User deleted successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to delete user",
+      });
+    }
+  }
 }
 
 export default new UserController();

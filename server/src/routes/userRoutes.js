@@ -5,11 +5,14 @@ import {
   changePasswordSchema,
   loginSchema,
   registerSchema,
+  userIdParamsSchema,
   updateProfileSchema,
 } from "../validators/userValidator.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { upload } from "../configs/multerConfig.js";
 import { handleUploadError } from "../middlewares/uploadMiddleware.js";
+import { authorize } from "../middlewares/authorizeMiddleware.js";
+import { validateParams } from "../middlewares/validateMiddleware.js";
 
 const router = express.Router();
 
@@ -40,6 +43,16 @@ router.put(
   upload.single("profile_image"),
   handleUploadError,
   userController.uploadProfileImage,
+);
+
+// ADMIN ROUTES (Authenticated + Admin only)
+router.get("/", authenticate, authorize("admin"), userController.getAllUsers);
+router.delete(
+  "/:userId",
+  authenticate,
+  authorize("admin"),
+  validateParams(userIdParamsSchema),
+  userController.deleteUser,
 );
 
 export default router;

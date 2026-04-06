@@ -153,3 +153,14 @@ export const changePasswordSchema = z
     message: "New password and confirm new password must match",
     path: ["confirm_new_password"],
   });
+
+// Validation schema for user ID route params
+export const userIdParamsSchema = z.object({
+  userId: z.coerce
+    .number({
+      required_error: "User ID is required",
+      invalid_type_error: "User ID must be a number",
+    })
+    .int("User ID must be an integer")
+    .positive("User ID must be a positive number"),
+});

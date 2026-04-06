@@ -1,5 +1,6 @@
 import userModel from "../models/userModel.js";
 import doctorProfileModel from "../models/doctorProfileModel.js";
+import connection from "../configs/db.js";
 
 // Service for user-related operations
 class UserService {
@@ -152,6 +153,73 @@ class UserService {
     await user.update({ profile_image: imagePath });
 
     return { oldImagePath };
+  }
+
+  // Admin: Get all users
+  async getAllUsers(filters = {}) {
+    const whereClause = {};
+
+    if (filters.role) {
+      if (!["admin", "doctor", "user"].includes(filters.role)) {
+        throw new Error("Invalid role filter");
+      }
+      whereClause.role = filters.role;
+    }
+
+    const users = await userModel.findAll({
+      where: whereClause,
+      attributes: { exclude: ["password"] },
+      order: [["created_at", "DESC"]],
+    });
+
+    return users.map((user) => {
+      const userResponse = user.toJSON();
+
+      if (userResponse.address && typeof userResponse.address === "string") {
+        try {
+          userResponse.address = JSON.parse(userResponse.address);
+        } catch (error) {
+          console.error("Failed to parse address:", error);
+        }
+      }
+
+      return userResponse;
+    });
+  }
+
+  // Admin: Delete user
+  async deleteUserByAdmin(targetUserId, currentUserId, currentUserRole) {
+    if (currentUserRole !== "admin") {
+      throw new Error("Only admin can delete users");
+    }
+
+    const userId = Number(targetUserId);
+    if (Number.isNaN(userId) || userId <= 0) {
+      throw new Error("Invalid user id");
+    }
+
+    const actorUserId = Number(currentUserId);
+
+    if (userId === actorUserId) {
+      throw new Error("Admin cannot delete their own account");
+    }
+
+    const user = await userModel.findByPk(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (user.role === "admin") {
+      throw new Error("Admin accounts cannot be deleted");
+    }
+
+    const deletedProfileImage = user.profile_image;
+
+    await connection.transaction(async (transaction) => {
+      await user.destroy({ transaction });
+    });
+
+    return { deletedProfileImage };
   }
 }
 
