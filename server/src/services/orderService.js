@@ -354,7 +354,7 @@ class OrderService {
     };
   }
 
-   async updateOrderStatus(orderId, status) {
+  async updateOrderStatus(orderId, status) {
     if (!ORDER_STATUSES.has(status)) {
       throw new Error("Invalid order status");
     }

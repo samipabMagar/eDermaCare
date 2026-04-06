@@ -173,4 +173,15 @@ export const adminService = {
       throw new Error(getApiErrorMessage(error, "Failed to fetch orders"));
     }
   },
+
+  async updateAdminOrderStatus(orderId, status) {
+    try {
+      const response = await api.patch(`/orders/${orderId}/status`, { status });
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to update order status"),
+      );
+    }
+  },
 };

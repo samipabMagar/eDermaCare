@@ -61,9 +61,9 @@ const AdminSidebar = () => {
     },
     {
       label: "Orders",
-      href: null,
+      href: ROUTES.ADMIN_ORDERS,
       icon: ShoppingBag,
-      match: "exact",
+      match: "startsWith",
     },
   ];
 
