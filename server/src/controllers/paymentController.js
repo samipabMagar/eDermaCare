@@ -77,6 +77,59 @@ class PaymentController {
       });
     }
   }
+
+  async initiateEsewa(req, res) {
+    try {
+      const orderId = req.params.orderId;
+      const currentUserId = req.user.id;
+      const currentUserRole = req.user.role;
+
+      const result = await paymentService.initiateEsewaPayment({
+        orderId,
+        currentUserId,
+        currentUserRole,
+        successUrl: req.body.success_url,
+        failureUrl: req.body.failure_url,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "eSewa payment initiated successfully",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to initiate eSewa payment",
+      });
+    }
+  }
+
+  async verifyEsewa(req, res) {
+    try {
+      const orderId = req.params.orderId;
+      const currentUserId = req.user.id;
+      const currentUserRole = req.user.role;
+
+      const result = await paymentService.verifyEsewaPayment({
+        orderId,
+        currentUserId,
+        currentUserRole,
+        data: req.body.data,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "eSewa payment status checked successfully",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to verify eSewa payment",
+      });
+    }
+  }
 }
 
 export default new PaymentController();

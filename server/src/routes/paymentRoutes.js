@@ -5,6 +5,8 @@ import { authorize } from "../middlewares/authorizeMiddleware.js";
 import { validate, validateParams } from "../middlewares/validateMiddleware.js";
 import { orderParamsSchema } from "../validators/orderValidator.js";
 import {
+  esewaInitiateSchema,
+  esewaVerifySchema,
   khaltiInitiateSchema,
   khaltiVerifySchema,
 } from "../validators/paymentValidator.js";
@@ -18,7 +20,6 @@ router.get(
   validateParams(orderParamsSchema),
   paymentController.getOrderPaymentHistory,
 );
-
 
 router.post(
   "/khalti/:orderId/initiate",
@@ -38,6 +39,22 @@ router.post(
   paymentController.verifyKhalti,
 );
 
+router.post(
+  "/esewa/:orderId/initiate",
+  authenticate,
+  authorize("user", "doctor", "admin"),
+  validateParams(orderParamsSchema),
+  validate(esewaInitiateSchema),
+  paymentController.initiateEsewa,
+);
 
+router.post(
+  "/esewa/:orderId/verify",
+  authenticate,
+  authorize("user", "doctor", "admin"),
+  validateParams(orderParamsSchema),
+  validate(esewaVerifySchema),
+  paymentController.verifyEsewa,
+);
 
 export default router;
