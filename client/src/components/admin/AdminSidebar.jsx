@@ -168,10 +168,12 @@ const AdminSidebar = () => {
       <div className="px-4 pb-4 pt-5">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-xl font-bold leading-5 text-slate-900">
-              eDermaCare
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">Admin Panel</p>
+            <Link href={ROUTES.HOME}>
+              <h1 className="text-xl font-bold leading-5 text-slate-900">
+                eDermaCare
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">Admin Panel</p>
+            </Link>
           </div>
         </div>
       </div>
