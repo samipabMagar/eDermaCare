@@ -8,6 +8,7 @@ import cartItemModel from "./cartItemModel.js";
 import orderModel from "./orderModel.js";
 import orderItemModel from "./orderItemModel.js";
 import paymentModel from "./paymentModel.js";
+import chatMessageModel from "./chatMessageModel.js";
 
 // Define relationships
 // One-to-One: User has one DoctorProfile
@@ -147,6 +148,39 @@ paymentModel.belongsTo(orderModel, {
   as: "order",
 });
 
+// One-to-Many: Appointment has many chat messages
+appointmentModel.hasMany(chatMessageModel, {
+  foreignKey: "appointment_id",
+  as: "messages",
+});
+
+chatMessageModel.belongsTo(appointmentModel, {
+  foreignKey: "appointment_id",
+  as: "appointment",
+});
+
+// One-to-Many: User can send many chat messages
+userModel.hasMany(chatMessageModel, {
+  foreignKey: "sender_user_id",
+  as: "sentMessages",
+});
+
+chatMessageModel.belongsTo(userModel, {
+  foreignKey: "sender_user_id",
+  as: "sender",
+});
+
+// One-to-Many: User can receive many chat messages
+userModel.hasMany(chatMessageModel, {
+  foreignKey: "receiver_user_id",
+  as: "receivedMessages",
+});
+
+chatMessageModel.belongsTo(userModel, {
+  foreignKey: "receiver_user_id",
+  as: "receiver",
+});
+
 export {
   userModel,
   doctorProfileModel,
@@ -158,4 +192,5 @@ export {
   orderModel,
   orderItemModel,
   paymentModel,
+  chatMessageModel,
 };
