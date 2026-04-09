@@ -42,7 +42,11 @@ const mainItems = [
 
 const otherItems = [
   { label: "Profile", href: ROUTES.USER_PROFILE, icon: User },
-  { label: "Messages", href: ROUTES.USER_DASHBOARD, icon: MessageCircle },
+  {
+    label: "Messages",
+    href: ROUTES.USER_DASHBOARD_MESSAGES,
+    icon: MessageCircle,
+  },
 ];
 
 const UserSidebar = ({ currentUser }) => {
