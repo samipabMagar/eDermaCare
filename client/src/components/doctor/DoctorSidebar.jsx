@@ -39,10 +39,9 @@ const DoctorSidebar = () => {
   ];
 
   const otherItems = [
+    { label: "Messages", href: ROUTES.DOCTOR_MESSAGES, icon: MessageSquare },
     { label: "My Profile", href: ROUTES.DOCTOR_PROFILE, icon: UserCircle },
   ];
-
-  const comingSoonOtherItems = [{ label: "Messages", icon: MessageSquare }];
 
   const handleLogout = async () => {
     try {
@@ -157,25 +156,6 @@ const DoctorSidebar = () => {
                     {item.label}
                   </span>
                 </Link>
-              );
-            })}
-
-            {comingSoonOtherItems.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/60"
-                >
-                  <Icon className="h-4.5 w-4.5" />
-                  <span className="flex flex-1 items-center justify-between">
-                    {item.label}
-                    <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/80">
-                      Soon
-                    </span>
-                  </span>
-                </div>
               );
             })}
           </nav>

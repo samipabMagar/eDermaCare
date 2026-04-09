@@ -155,6 +155,15 @@ const AppointmentDetailsModal = ({
                 </div>
               </div>
 
+              {appointment.doctor_notes ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-xs text-slate-500">Doctor Notes</p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    {appointment.doctor_notes}
+                  </p>
+                </div>
+              ) : null}
+
               {appointment.meeting_provider || appointment.meeting_link ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-3">
                   <p className="text-xs text-slate-500">Meeting</p>
@@ -175,15 +184,6 @@ const AppointmentDetailsModal = ({
                       <Video className="h-3.5 w-3.5" /> Open meeting link
                     </a>
                   ) : null}
-                </div>
-              ) : null}
-
-              {appointment.doctor_notes ? (
-                <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <p className="text-xs text-slate-500">Doctor Notes</p>
-                  <p className="mt-1 text-sm text-slate-700">
-                    {appointment.doctor_notes}
-                  </p>
                 </div>
               ) : null}
 
