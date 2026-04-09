@@ -4,16 +4,19 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import connection from "./configs/db.js";
 import "./models/index.js";
 import routes from "./routes/index.js";
+import { setupChatSocket } from "./sockets/chatSocket.js";
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.resolve(__dirname, "../uploads");
@@ -73,6 +76,9 @@ app.get("/", (req, res) => {
 // Mount all API routes
 app.use("/api", routes);
 
+// Initialize Socket.IO chat server
+setupChatSocket(server, corsOptions);
+
 // Test database connection and start the server
 connection
   .authenticate()
@@ -82,7 +88,7 @@ connection
   })
   .then(() => {
     console.log("Database synced successfully.");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
