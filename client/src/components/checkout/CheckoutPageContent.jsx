@@ -180,6 +180,47 @@ const CheckoutPageContent = () => {
         return;
       }
 
+      if (paymentMethod === "esewa") {
+        const successUrl = `${window.location.origin}/payment/esewa/success`;
+        const failureUrl = `${window.location.origin}/payment/esewa/failure`;
+
+        window.localStorage.setItem(
+          "pendingEsewaOrderId",
+          String(order.order_id),
+        );
+
+        const paymentInit = await paymentService.initiateEsewa(
+          order.order_id,
+          successUrl,
+          failureUrl,
+        );
+
+        const gatewayUrl = paymentInit?.esewa?.gateway_url;
+        const formFields = paymentInit?.esewa?.form_fields;
+
+        if (!gatewayUrl || !formFields) {
+          throw new Error("eSewa payment form data is missing");
+        }
+
+        dispatch(setCartItems([]));
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = gatewayUrl;
+
+        Object.entries(formFields).forEach(([key, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = String(value ?? "");
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+
       dispatch(setCartItems([]));
       toast.success("Order placed successfully");
       router.push("/dashboard");

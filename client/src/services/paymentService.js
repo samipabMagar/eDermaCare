@@ -47,4 +47,36 @@ export const paymentService = {
       );
     }
   },
+
+  async initiateEsewa(orderId, successUrl, failureUrl) {
+    try {
+      const payload = {};
+      if (successUrl) payload.success_url = successUrl;
+      if (failureUrl) payload.failure_url = failureUrl;
+
+      const response = await api.post(
+        `/payments/esewa/${orderId}/initiate`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to initiate eSewa payment"),
+      );
+    }
+  },
+
+  async verifyEsewa(orderId, payload) {
+    try {
+      const response = await api.post(
+        `/payments/esewa/${orderId}/verify`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to verify eSewa payment"),
+      );
+    }
+  },
 };

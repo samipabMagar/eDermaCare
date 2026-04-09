@@ -11,18 +11,18 @@ const paymentOptions = [
     description: "Pay online with Khalti",
     enabled: true,
   },
-//   {
-//     value: "esewa",
-//     label: "eSewa (Coming soon)",
-//     description: "Not enabled yet",
-//     enabled: false,
-//   },
-//   {
-//     value: "stripe",
-//     label: "Stripe (Coming soon)",
-//     description: "Not enabled yet",
-//     enabled: false,
-//   },
+  {
+    value: "esewa",
+    label: "eSewa",
+    description: "Pay online with eSewa",
+    enabled: true,
+  },
+  //   {
+  //     value: "stripe",
+  //     label: "Stripe (Coming soon)",
+  //     description: "Not enabled yet",
+  //     enabled: false,
+  //   },
 ];
 
 const CheckoutPaymentStep = ({
