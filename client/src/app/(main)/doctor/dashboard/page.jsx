@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Clock3, Loader2 } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Loader2,
+  UserRoundCheck,
+  Users,
+} from "lucide-react";
 import { appointmentService } from "@/services/appointmentService";
 import DoctorOverviewStats from "@/components/doctor/dashboard/DoctorOverviewStats";
 import { ROUTES } from "@/constants/routes";
@@ -55,67 +61,83 @@ export default function DoctorDashboardPage() {
   }, []);
 
   const stats = useMemo(() => {
-    const now = new Date();
-    const today = now.toDateString();
-
     const total = appointments.length;
-    const todayCount = appointments.filter((item) => {
-      const date = new Date(item.scheduled_at);
-      return !Number.isNaN(date.getTime()) && date.toDateString() === today;
-    }).length;
-    const completedToday = appointments.filter((item) => {
-      const date = new Date(item.scheduled_at);
-      return (
-        item.status === "completed" &&
-        !Number.isNaN(date.getTime()) &&
-        date.toDateString() === today
-      );
-    }).length;
-    const pendingCount = appointments.filter(
-      (item) => item.status === "pending",
+    const completedCount = appointments.filter(
+      (item) => String(item.status || "").toLowerCase() === "completed",
     ).length;
+    const confirmedCount = appointments.filter(
+      (item) => String(item.status || "").toLowerCase() === "confirmed",
+    ).length;
+
+    const uniquePatientKeys = new Set(
+      appointments
+        .map((item) => {
+          const patient = item.patient || {};
+          return (
+            patient.user_id ||
+            patient.id ||
+            patient.email ||
+            item.patient_user_id ||
+            null
+          );
+        })
+        .filter(Boolean),
+    );
+
+    const patientCount = uniquePatientKeys.size;
 
     return [
       {
         label: "Total Appointments",
         value: String(total),
-        change: `${todayCount} today`,
+        change: "All time",
         icon: CalendarDays,
         color: "bg-teal-100 text-teal-700",
       },
       {
-        label: "Pending Requests",
-        value: String(pendingCount),
-        change: "Awaiting response",
-        icon: Clock3,
-        color: "bg-amber-100 text-amber-700",
+        label: "Total Patients",
+        value: String(patientCount),
+        change: "Unique patients",
+        icon: Users,
+        color: "bg-indigo-100 text-indigo-700",
       },
       {
-        label: "Completed Today",
-        value: String(completedToday),
-        change: "Finished consultations",
-        icon: CalendarDays,
+        label: "Total Completed",
+        value: String(completedCount),
+        change: "All time",
+        icon: CheckCircle2,
         color: "bg-emerald-100 text-emerald-700",
       },
       {
-        label: "Confirmed",
-        value: String(
-          appointments.filter((item) => item.status === "confirmed").length,
-        ),
-        change: "Upcoming confirmed slots",
-        icon: Clock3,
+        label: "Total Confirmed",
+        value: String(confirmedCount),
+        change: "All time",
+        icon: UserRoundCheck,
         color: "bg-sky-100 text-sky-700",
       },
     ];
   }, [appointments]);
 
-  const todaysSchedule = useMemo(() => {
-    const today = new Date().toDateString();
+  const weeklySchedule = useMemo(() => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    const dayOfWeek = weekStart.getDay();
+    const daysFromMonday = (dayOfWeek + 6) % 7;
+
+    weekStart.setDate(weekStart.getDate() - daysFromMonday);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+
     return appointments
       .filter((item) => {
         const date = new Date(item.scheduled_at);
-        return !Number.isNaN(date.getTime()) && date.toDateString() === today;
+        return (
+          !Number.isNaN(date.getTime()) && date >= weekStart && date < weekEnd
+        );
       })
+      .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
       .slice(0, 6);
   }, [appointments]);
 
@@ -142,7 +164,7 @@ export default function DoctorDashboardPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <h2 className="text-base font-semibold text-slate-900">
-              Today's Schedule
+              This Week&apos;s Schedule
             </h2>
             <Link
               href={ROUTES.DOCTOR_APPOINTMENTS}
@@ -153,12 +175,12 @@ export default function DoctorDashboardPage() {
           </div>
 
           <div className="mt-3 space-y-2">
-            {!todaysSchedule.length ? (
+            {!weeklySchedule.length ? (
               <p className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 text-sm text-slate-500">
-                No appointments scheduled for today.
+                No appointments scheduled for this week.
               </p>
             ) : (
-              todaysSchedule.map((appointment) => (
+              weeklySchedule.map((appointment) => (
                 <article
                   key={appointment.appointment_id}
                   className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-3 hover:bg-slate-50"
