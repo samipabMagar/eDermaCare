@@ -11,12 +11,32 @@ const getApiErrorMessage = (error, fallbackMessage) => {
 const buildQueryParams = (filters = {}) => {
   const params = {};
 
+  if (filters.page) {
+    params.page = filters.page;
+  }
+
+  if (filters.limit) {
+    params.limit = filters.limit;
+  }
+
+  if (filters.search) {
+    params.search = filters.search;
+  }
+
   if (filters.specialization) {
     params.specialization = filters.specialization;
   }
 
   if (typeof filters.isAvailable === "boolean") {
     params.is_available = filters.isAvailable;
+  }
+
+  if (filters.sortBy) {
+    params.sort_by = filters.sortBy;
+  }
+
+  if (filters.approvalStatus) {
+    params.approval_status = filters.approvalStatus;
   }
 
   return params;
@@ -29,10 +49,28 @@ export const doctorService = {
         params: buildQueryParams(filters),
       });
 
-      const doctors = response.data?.data ?? [];
+      const payload = response.data?.data;
 
-      // Ensure only approved doctors are shown on the public list.
-      return doctors.filter((doctor) => doctor.approval_status === "approved");
+      if (Array.isArray(payload)) {
+        const approved = payload.filter(
+          (doctor) => doctor.approval_status === "approved",
+        );
+
+        return {
+          doctors: approved,
+          pagination: null,
+        };
+      }
+
+      const doctors = Array.isArray(payload?.doctors) ? payload.doctors : [];
+      const approved = doctors.filter(
+        (doctor) => doctor.approval_status === "approved",
+      );
+
+      return {
+        doctors: approved,
+        pagination: payload?.pagination || null,
+      };
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to load doctors"));
     }
@@ -44,7 +82,9 @@ export const doctorService = {
       const response = await api.get("/doctors/profile");
       return response.data?.data;
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, "Failed to load doctor profile"));
+      throw new Error(
+        getApiErrorMessage(error, "Failed to load doctor profile"),
+      );
     }
   },
 
@@ -54,7 +94,9 @@ export const doctorService = {
       const response = await api.put("/doctors/profile", profileData);
       return response.data;
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, "Failed to update doctor profile"));
+      throw new Error(
+        getApiErrorMessage(error, "Failed to update doctor profile"),
+      );
     }
   },
 
@@ -64,7 +106,9 @@ export const doctorService = {
       const response = await api.patch("/doctors/profile/availability");
       return response.data;
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, "Failed to update availability"));
+      throw new Error(
+        getApiErrorMessage(error, "Failed to update availability"),
+      );
     }
   },
 };

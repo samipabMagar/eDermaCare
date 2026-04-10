@@ -1,4 +1,5 @@
 import connection from "../configs/db.js";
+import { Op } from "sequelize";
 import userModel from "../models/userModel.js";
 import doctorProfileModel from "../models/doctorProfileModel.js";
 import {
@@ -189,9 +190,10 @@ class DoctorProfileService {
     return profile.toJSON();
   }
 
-  // Get all doctor profiles
-  async getAllDoctors(filters = {}) {
+  // Get all doctor profiles (optionally paginated)
+  async getAllDoctors(filters = {}, pagination = null) {
     const whereClause = {};
+    const userWhereClause = {};
 
     if (filters.specialization) {
       whereClause.specialization = filters.specialization;
@@ -201,8 +203,89 @@ class DoctorProfileService {
       whereClause.is_available = filters.is_available;
     }
 
+    if (filters.approval_status) {
+      whereClause.approval_status = filters.approval_status;
+    }
+
+    if (filters.search) {
+      const searchPattern = `%${filters.search}%`;
+      whereClause[Op.or] = [
+        { specialization: { [Op.like]: searchPattern } },
+        { bio: { [Op.like]: searchPattern } },
+      ];
+
+      userWhereClause[Op.or] = [
+        { full_name: { [Op.like]: searchPattern } },
+        { email: { [Op.like]: searchPattern } },
+      ];
+    }
+
+    const orderClause = (() => {
+      switch (filters.sort_by) {
+        case "experience":
+          return [["years_of_experience", "DESC"]];
+        case "reviews":
+          return [["total_reviews", "DESC"]];
+        case "rating":
+        default:
+          return [["rating", "DESC"]];
+      }
+    })();
+
+    const includeClause = [
+      {
+        model: userModel,
+        as: "user",
+        attributes: ["user_id", "full_name", "email", "phone", "profile_image"],
+        ...(Object.keys(userWhereClause).length
+          ? { where: userWhereClause, required: true }
+          : {}),
+      },
+    ];
+
+    if (pagination?.page && pagination?.limit) {
+      const page = Math.max(1, Number(pagination.page) || 1);
+      const limit = Math.min(50, Math.max(1, Number(pagination.limit) || 6));
+      const offset = (page - 1) * limit;
+
+      const { rows, count } = await doctorProfileModel.findAndCountAll({
+        where: whereClause,
+        include: includeClause,
+        order: orderClause,
+        limit,
+        offset,
+        distinct: true,
+      });
+
+      const total = Number(count || 0);
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+
+      return {
+        doctors: rows.map((profile) => profile.toJSON()),
+        pagination: {
+          page,
+          limit,
+          total,
+          total_pages: totalPages,
+          has_next_page: page < totalPages,
+          has_previous_page: page > 1,
+        },
+      };
+    }
+
     const profiles = await doctorProfileModel.findAll({
       where: whereClause,
+      include: includeClause,
+      order: orderClause,
+    });
+
+    return profiles.map((profile) => profile.toJSON());
+  }
+
+  // Get doctor profile by user ID
+  async getDoctorProfileByUserId(userId) {
+    const profile = await doctorProfileModel.findOne({
+      where: { user_id: userId },
       include: [
         {
           model: userModel,
@@ -216,26 +299,9 @@ class DoctorProfileService {
           ],
         },
       ],
-      order: [["rating", "DESC"]],
     });
 
-    return profiles.map((profile) => profile.toJSON());
-  }
-
-  // Get doctor profile by user ID
-  async getDoctorProfileByUserId(userId){
-    const profile = await doctorProfileModel.findOne({
-      where: {user_id: userId},
-      include: [
-        {
-          model: userModel,
-          as: "user",
-          attributes: ["user_id", "full_name", "email", "phone", "profile_image"]
-        }
-      ]
-    })
-
-    if(!profile){
+    if (!profile) {
       throw new Error("Doctor profile not found");
     }
 

@@ -87,12 +87,28 @@ class DoctorProfileController {
   // Get all doctors
   async getAllDoctors(req, res) {
     try {
+      const hasPagination =
+        req.query.page !== undefined || req.query.limit !== undefined;
+
       const filters = {
         is_available: req.query.is_available === "true" ? true : undefined,
         specialization: req.query.specialization,
+        approval_status: req.query.approval_status,
+        search: req.query.search?.trim() || undefined,
+        sort_by: req.query.sort_by,
       };
 
-      const doctors = await doctorProfileService.getAllDoctors(filters);
+      const pagination = hasPagination
+        ? {
+            page: req.query.page,
+            limit: req.query.limit,
+          }
+        : null;
+
+      const doctors = await doctorProfileService.getAllDoctors(
+        filters,
+        pagination,
+      );
 
       res.status(200).json({
         success: true,
@@ -108,22 +124,24 @@ class DoctorProfileController {
   }
 
   // Get doctor profile by user ID
-  async getDoctorByUserId(req, res){
+  async getDoctorByUserId(req, res) {
     try {
-      const {userId} = req.params;
+      const { userId } = req.params;
 
-      const doctor = await doctorProfileService.getDoctorProfileByUserId(parseInt(userId));
+      const doctor = await doctorProfileService.getDoctorProfileByUserId(
+        parseInt(userId),
+      );
 
       res.status(200).json({
         success: true,
         message: "Doctor profile retrieved successfully",
         data: doctor,
-      })
-    }catch (error){
+      });
+    } catch (error) {
       res.status(404).json({
         success: false,
         message: error.message || "Failed to retrieve doctor profile",
-      })
+      });
     }
   }
 

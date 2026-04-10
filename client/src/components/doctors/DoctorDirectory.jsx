@@ -12,10 +12,13 @@ import BookAppointmentModal from "@/components/doctors/BookAppointmentModal";
 import { LOGIN_ROUTE } from "@/constants/routes";
 
 const DoctorDirectory = () => {
+  const PAGE_SIZE = 6;
+
   const router = useRouter();
   const pathname = usePathname();
   const authState = useSelector((state) => state.auth);
   const [doctors, setDoctors] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +26,13 @@ const DoctorDirectory = () => {
   const [sortBy, setSortBy] = useState("Rating");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [bookingDoctor, setBookingDoctor] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const sortByQuery = useMemo(() => {
+    if (sortBy === "Experience") return "experience";
+    if (sortBy === "Reviews") return "reviews";
+    return "rating";
+  }, [sortBy]);
 
   useEffect(() => {
     const loadDoctors = async () => {
@@ -30,8 +40,17 @@ const DoctorDirectory = () => {
         setLoading(true);
         setError("");
 
-        const doctorList = await doctorService.getDoctors();
-        setDoctors(doctorList);
+        const response = await doctorService.getDoctors({
+          page: currentPage,
+          limit: PAGE_SIZE,
+          search: searchQuery.trim() || undefined,
+          specialization: selectedSpec === "All" ? undefined : selectedSpec,
+          sortBy: sortByQuery,
+          approvalStatus: "approved",
+        });
+
+        setDoctors(Array.isArray(response?.doctors) ? response.doctors : []);
+        setPagination(response?.pagination || null);
       } catch (loadError) {
         setError(loadError.message || "Unable to load doctors right now.");
       } finally {
@@ -40,7 +59,11 @@ const DoctorDirectory = () => {
     };
 
     loadDoctors();
-  }, []);
+  }, [currentPage, searchQuery, selectedSpec, sortByQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedSpec, sortBy]);
 
   const availableCount = useMemo(() => {
     return doctors.filter((doctor) => doctor.is_available).length;
@@ -68,44 +91,35 @@ const DoctorDirectory = () => {
     return ["All", ...new Set(options)];
   }, [doctors]);
 
-  const filteredDoctors = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredDoctors = doctors;
 
-    const next = doctors.filter((doctor) => {
-      const name = String(doctor.user?.full_name || "").toLowerCase();
-      const specialization = String(doctor.specialization || "").toLowerCase();
-      const bio = String(doctor.bio || "").toLowerCase();
+  const totalDoctors = Number(pagination?.total || filteredDoctors.length);
+  const totalPages = Number(pagination?.total_pages || 1);
 
-      const matchSearch =
-        !normalizedQuery ||
-        name.includes(normalizedQuery) ||
-        specialization.includes(normalizedQuery) ||
-        bio.includes(normalizedQuery);
+  const visiblePageItems = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
 
-      const matchSpec =
-        selectedSpec === "All" ||
-        String(doctor.specialization || "") === selectedSpec;
+    const pages = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
 
-      return matchSearch && matchSpec;
-    });
+    if (start > 2) {
+      pages.push("ellipsis-left");
+    }
 
-    next.sort((a, b) => {
-      if (sortBy === "Experience") {
-        return (
-          Number(b.years_of_experience || 0) -
-          Number(a.years_of_experience || 0)
-        );
-      }
+    for (let page = start; page <= end; page += 1) {
+      pages.push(page);
+    }
 
-      if (sortBy === "Reviews") {
-        return Number(b.total_reviews || 0) - Number(a.total_reviews || 0);
-      }
+    if (end < totalPages - 1) {
+      pages.push("ellipsis-right");
+    }
 
-      return Number(b.rating || 0) - Number(a.rating || 0);
-    });
-
-    return next;
-  }, [doctors, searchQuery, selectedSpec, sortBy]);
+    pages.push(totalPages);
+    return pages;
+  }, [currentPage, totalPages]);
 
   const handleBookAppointment = (doctor) => {
     const isAuthenticated =
@@ -185,8 +199,7 @@ const DoctorDirectory = () => {
                 </div>
 
                 <span className="hidden text-xs text-slate-500 md:inline">
-                  {filteredDoctors.length} doctor
-                  {filteredDoctors.length === 1 ? "" : "s"}
+                  {totalDoctors} doctor{totalDoctors === 1 ? "" : "s"}
                 </span>
               </div>
             </div>
@@ -268,6 +281,68 @@ const DoctorDirectory = () => {
                 ))}
               </div>
             )}
+
+            {totalDoctors > 0 ? (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage <= 1}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+
+                {totalPages > 1 ? (
+                  visiblePageItems.map((item) => {
+                    if (typeof item !== "number") {
+                      return (
+                        <span
+                          key={item}
+                          className="px-1 text-xs font-semibold text-slate-400"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    const isActive = item === currentPage;
+
+                    return (
+                      <button
+                        key={`page-${item}`}
+                        type="button"
+                        onClick={() => setCurrentPage(item)}
+                        className={`h-8 min-w-8 rounded-lg px-2 text-xs font-semibold transition ${
+                          isActive
+                            ? "bg-[#0F9EA5] text-white"
+                            : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <span className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600">
+                    Page 1 of 1
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage >= totalPages}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
