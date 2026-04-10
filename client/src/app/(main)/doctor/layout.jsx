@@ -25,30 +25,43 @@ export default async function DoctorLayout({ children }) {
     redirect("/dashboard");
   }
 
+  const firstName = currentUser.full_name?.split(" ")?.[0] || "Doctor";
+  const initials =
+    currentUser.full_name
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "DR";
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-linear-to-b from-[#EFF4FF] via-[#F8FAFC] to-[#EEF2FF]" />
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex min-h-screen w-full flex-col lg:flex-row">
+        <DoctorSidebar currentUser={currentUser} />
 
-      <div className="relative z-10 flex w-full flex-col lg:pl-72">
-        <DoctorSidebar />
-
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6">
-          <div className="flex items-center justify-between">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
             <div>
               <h1 className="text-base font-semibold text-slate-900 sm:text-lg">
-                Welcome back, Dr.{" "}
-                {currentUser.full_name?.split(" ")[0] || "Doctor"}
+                Welcome back, Dr. {firstName}
               </h1>
               <p className="text-xs text-slate-500 sm:text-sm">
-                Here is your practice overview for today.
+                Here&apos;s your practice overview for today.
               </p>
             </div>
-          </div>
-        </header>
 
-        <main className="w-full px-4 py-4 sm:px-6">{children}</main>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2FA4A9]/10 text-sm font-semibold text-[#1D7D82]">
+                {initials}
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-auto px-4 py-4 sm:px-6">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

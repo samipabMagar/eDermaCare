@@ -121,18 +121,6 @@ export default function DoctorDashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#2FA4A9]">
-          Doctor Dashboard
-        </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-          Practice Overview
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Monitor live appointment activity from your current practice data.
-        </p>
-      </section>
-
       {loading ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-600">
           <span className="inline-flex items-center gap-2">
