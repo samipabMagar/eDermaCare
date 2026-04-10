@@ -84,14 +84,49 @@ export default function DashboardMessages() {
           ),
         );
 
-        const mapped = chatEnabledAppointments.map((item) => ({
-          appointmentId: item.appointment_id,
-          doctorName: item.doctor?.full_name || "Doctor",
-          subtitle: item.doctor?.email || "Active appointment chat",
-          lastMessage: "",
-          lastMessageAt: item.updated_at || item.scheduled_at,
-          unread: 0,
-        }));
+        const sortedAppointments = [...chatEnabledAppointments].sort(
+          (a, b) =>
+            new Date(a.scheduled_at || a.created_at || 0).getTime() -
+            new Date(b.scheduled_at || b.created_at || 0).getTime(),
+        );
+
+        const conversationsByDoctor = new Map();
+
+        sortedAppointments.forEach((item) => {
+          const doctor = item.doctor || {};
+          const doctorKey =
+            doctor.user_id ||
+            doctor.id ||
+            doctor.email ||
+            item.doctor_user_id ||
+            `doctor-${item.appointment_id}`;
+
+          const current = conversationsByDoctor.get(doctorKey);
+          if (!current) {
+            conversationsByDoctor.set(doctorKey, {
+              appointmentId: item.appointment_id,
+              appointmentIds: [Number(item.appointment_id)],
+              doctorName: doctor.full_name || "Doctor",
+              subtitle: doctor.email || "Lifetime chat thread",
+              lastMessage: "",
+              lastMessageAt: item.updated_at || item.scheduled_at,
+              unread: 0,
+            });
+            return;
+          }
+
+          current.appointmentIds.push(Number(item.appointment_id));
+
+          const currentTime = new Date(current.lastMessageAt || 0).getTime();
+          const nextTime = new Date(
+            item.updated_at || item.scheduled_at || 0,
+          ).getTime();
+          if (nextTime > currentTime) {
+            current.lastMessageAt = item.updated_at || item.scheduled_at;
+          }
+        });
+
+        const mapped = Array.from(conversationsByDoctor.values());
 
         setConversations(mapped);
         if (mapped.length > 0) {
@@ -125,7 +160,11 @@ export default function DashboardMessages() {
     ) => {
       setConversations((current) =>
         current.map((item) => {
-          if (Number(item.appointmentId) !== Number(appointmentId)) {
+          const appointmentIds = Array.isArray(item.appointmentIds)
+            ? item.appointmentIds
+            : [Number(item.appointmentId)];
+
+          if (!appointmentIds.includes(Number(appointmentId))) {
             return item;
           }
 
@@ -157,7 +196,11 @@ export default function DashboardMessages() {
         if (!isFromMe) {
           setConversations((current) =>
             current.map((item) => {
-              if (Number(item.appointmentId) !== appointmentId) {
+              const appointmentIds = Array.isArray(item.appointmentIds)
+                ? item.appointmentIds
+                : [Number(item.appointmentId)];
+
+              if (!appointmentIds.includes(appointmentId)) {
                 return item;
               }
 
@@ -361,7 +404,7 @@ export default function DashboardMessages() {
         >
           {!activeConversation ? (
             <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-slate-500">
-              No confirmed appointments available for chat.
+              No confirmed or completed appointments available for chat.
             </div>
           ) : (
             <>
@@ -388,7 +431,7 @@ export default function DashboardMessages() {
                     {activeConversation.doctorName}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Confirmed appointment chat
+                    Lifetime appointment chat
                   </p>
                 </div>
               </div>

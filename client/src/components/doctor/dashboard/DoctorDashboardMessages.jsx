@@ -84,14 +84,49 @@ export default function DoctorDashboardMessages() {
           ),
         );
 
-        const mapped = chatEnabledAppointments.map((item) => ({
-          appointmentId: item.appointment_id,
-          patientName: item.patient?.full_name || "Patient",
-          subtitle: item.patient?.email || "Active appointment chat",
-          lastMessage: "",
-          lastMessageAt: item.updated_at || item.scheduled_at,
-          unread: 0,
-        }));
+        const sortedAppointments = [...chatEnabledAppointments].sort(
+          (a, b) =>
+            new Date(a.scheduled_at || a.created_at || 0).getTime() -
+            new Date(b.scheduled_at || b.created_at || 0).getTime(),
+        );
+
+        const conversationsByPatient = new Map();
+
+        sortedAppointments.forEach((item) => {
+          const patient = item.patient || {};
+          const patientKey =
+            patient.user_id ||
+            patient.id ||
+            patient.email ||
+            item.patient_user_id ||
+            `patient-${item.appointment_id}`;
+
+          const current = conversationsByPatient.get(patientKey);
+          if (!current) {
+            conversationsByPatient.set(patientKey, {
+              appointmentId: item.appointment_id,
+              appointmentIds: [Number(item.appointment_id)],
+              patientName: patient.full_name || "Patient",
+              subtitle: patient.email || "Lifetime chat thread",
+              lastMessage: "",
+              lastMessageAt: item.updated_at || item.scheduled_at,
+              unread: 0,
+            });
+            return;
+          }
+
+          current.appointmentIds.push(Number(item.appointment_id));
+
+          const currentTime = new Date(current.lastMessageAt || 0).getTime();
+          const nextTime = new Date(
+            item.updated_at || item.scheduled_at || 0,
+          ).getTime();
+          if (nextTime > currentTime) {
+            current.lastMessageAt = item.updated_at || item.scheduled_at;
+          }
+        });
+
+        const mapped = Array.from(conversationsByPatient.values());
 
         setConversations(mapped);
         if (mapped.length > 0) {
@@ -125,7 +160,11 @@ export default function DoctorDashboardMessages() {
     ) => {
       setConversations((current) =>
         current.map((item) => {
-          if (Number(item.appointmentId) !== Number(appointmentId)) {
+          const appointmentIds = Array.isArray(item.appointmentIds)
+            ? item.appointmentIds
+            : [Number(item.appointmentId)];
+
+          if (!appointmentIds.includes(Number(appointmentId))) {
             return item;
           }
 
@@ -157,7 +196,11 @@ export default function DoctorDashboardMessages() {
         if (!isFromMe) {
           setConversations((current) =>
             current.map((item) => {
-              if (Number(item.appointmentId) !== appointmentId) {
+              const appointmentIds = Array.isArray(item.appointmentIds)
+                ? item.appointmentIds
+                : [Number(item.appointmentId)];
+
+              if (!appointmentIds.includes(appointmentId)) {
                 return item;
               }
 
@@ -272,7 +315,8 @@ export default function DoctorDashboardMessages() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Messages</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Chat with your patients after confirmed appointments.
+          Chat with your patients after confirmed appointments, even after
+          completion.
         </p>
       </div>
 
@@ -360,7 +404,7 @@ export default function DoctorDashboardMessages() {
         >
           {!activeConversation ? (
             <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-slate-500">
-              No confirmed appointments available for chat.
+              No confirmed or completed appointments available for chat.
             </div>
           ) : (
             <>
@@ -387,7 +431,7 @@ export default function DoctorDashboardMessages() {
                     {activeConversation.patientName}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Confirmed appointment chat
+                    Lifetime appointment chat
                   </p>
                 </div>
               </div>
