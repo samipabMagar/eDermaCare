@@ -68,12 +68,6 @@ const formatTimeLabel = (value) => {
   return `${normalizedHour}:${String(minute).padStart(2, "0")} ${suffix}`;
 };
 
-const formatFee = (fee) => {
-  const numeric = Number(fee);
-  if (Number.isNaN(numeric)) return "N/A";
-  return `Rs. ${numeric.toLocaleString()}`;
-};
-
 const StepIndicator = ({ step }) => {
   const currentIndex =
     step === "success" ? STEP_ORDER.length : STEP_ORDER.indexOf(step);
@@ -416,10 +410,10 @@ const BookAppointmentModal = ({ open, onClose, doctor }) => {
 
                 <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
                   <span className="text-xs font-semibold text-slate-700">
-                    Consultation Fee
+                    Appointment Fee
                   </span>
-                  <span className="text-sm font-bold text-teal-700">
-                    {formatFee(doctor.consultation_fee)}
+                  <span className="text-sm font-bold text-emerald-700">
+                    Free
                   </span>
                 </div>
               </div>

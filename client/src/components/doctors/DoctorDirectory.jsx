@@ -101,12 +101,6 @@ const DoctorDirectory = () => {
         return Number(b.total_reviews || 0) - Number(a.total_reviews || 0);
       }
 
-      if (sortBy === "Fee: Low to High") {
-        return (
-          Number(a.consultation_fee || 0) - Number(b.consultation_fee || 0)
-        );
-      }
-
       return Number(b.rating || 0) - Number(a.rating || 0);
     });
 

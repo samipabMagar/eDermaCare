@@ -40,16 +40,6 @@ const getDoctorInitials = (fullName = "Doctor") => {
     .join("");
 };
 
-const formatConsultationFee = (fee) => {
-  const amount = Number(fee);
-
-  if (Number.isNaN(amount)) {
-    return "N/A";
-  }
-
-  return `Rs. ${amount.toLocaleString()}`;
-};
-
 const getTags = (specialization) => {
   if (!specialization) return [];
 
@@ -199,10 +189,8 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-slate-500">Consultation</p>
-            <p className="text-sm font-bold text-slate-900">
-              {formatConsultationFee(doctor.consultation_fee)}
-            </p>
+            <p className="text-[10px] text-slate-500">Appointment</p>
+            <p className="text-sm font-bold text-emerald-700">Free</p>
           </div>
         </div>
 
