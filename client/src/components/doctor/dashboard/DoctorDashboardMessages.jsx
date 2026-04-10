@@ -76,16 +76,18 @@ export default function DoctorDashboardMessages() {
         const userId = Number(currentUser?.user_id);
         setCurrentUserId(Number.isFinite(userId) ? userId : null);
 
-        const confirmedAppointments = (
+        const chatEnabledAppointments = (
           Array.isArray(appointments) ? appointments : []
-        ).filter(
-          (item) => String(item.status || "").toLowerCase() === "confirmed",
+        ).filter((item) =>
+          ["confirmed", "completed"].includes(
+            String(item.status || "").toLowerCase(),
+          ),
         );
 
-        const mapped = confirmedAppointments.map((item) => ({
+        const mapped = chatEnabledAppointments.map((item) => ({
           appointmentId: item.appointment_id,
           patientName: item.patient?.full_name || "Patient",
-          subtitle: item.patient?.email || "Confirmed appointment",
+          subtitle: item.patient?.email || "Active appointment chat",
           lastMessage: "",
           lastMessageAt: item.updated_at || item.scheduled_at,
           unread: 0,

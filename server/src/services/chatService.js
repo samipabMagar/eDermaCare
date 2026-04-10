@@ -4,7 +4,7 @@ import chatMessageModel from "../models/chatMessageModel.js";
 import userModel from "../models/userModel.js";
 
 class ChatService {
-  async getConfirmedAppointmentForUser(userId, appointmentId) {
+  async getChatEnabledAppointmentForUser(userId, appointmentId) {
     const appointment = await appointmentModel.findByPk(appointmentId, {
       include: [
         {
@@ -24,8 +24,11 @@ class ChatService {
       throw new Error("Appointment not found");
     }
 
-    if (appointment.status !== "confirmed") {
-      throw new Error("Chat is available only for confirmed appointments");
+    const status = String(appointment.status || "").toLowerCase();
+    if (!["confirmed", "completed"].includes(status)) {
+      throw new Error(
+        "Chat is available only for confirmed or completed appointments",
+      );
     }
 
     const isParticipant =
@@ -40,7 +43,7 @@ class ChatService {
   }
 
   async getMessages(userId, appointmentId) {
-    await this.getConfirmedAppointmentForUser(userId, appointmentId);
+    await this.getChatEnabledAppointmentForUser(userId, appointmentId);
 
     const messages = await chatMessageModel.findAll({
       where: { appointment_id: appointmentId },
@@ -60,7 +63,7 @@ class ChatService {
   async sendMessage(userId, appointmentId, payload) {
     const { message } = payload;
 
-    const appointment = await this.getConfirmedAppointmentForUser(
+    const appointment = await this.getChatEnabledAppointmentForUser(
       userId,
       appointmentId,
     );
@@ -90,7 +93,7 @@ class ChatService {
   }
 
   async markMessagesAsRead(userId, appointmentId) {
-    await this.getConfirmedAppointmentForUser(userId, appointmentId);
+    await this.getChatEnabledAppointmentForUser(userId, appointmentId);
 
     const [updatedCount] = await chatMessageModel.update(
       { is_read: true },

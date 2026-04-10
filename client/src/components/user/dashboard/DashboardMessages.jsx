@@ -76,16 +76,18 @@ export default function DashboardMessages() {
         const userId = Number(currentUser?.user_id);
         setCurrentUserId(Number.isFinite(userId) ? userId : null);
 
-        const confirmedAppointments = (
+        const chatEnabledAppointments = (
           Array.isArray(appointments) ? appointments : []
-        ).filter(
-          (item) => String(item.status || "").toLowerCase() === "confirmed",
+        ).filter((item) =>
+          ["confirmed", "completed"].includes(
+            String(item.status || "").toLowerCase(),
+          ),
         );
 
-        const mapped = confirmedAppointments.map((item) => ({
+        const mapped = chatEnabledAppointments.map((item) => ({
           appointmentId: item.appointment_id,
           doctorName: item.doctor?.full_name || "Doctor",
-          subtitle: item.doctor?.email || "Confirmed appointment",
+          subtitle: item.doctor?.email || "Active appointment chat",
           lastMessage: "",
           lastMessageAt: item.updated_at || item.scheduled_at,
           unread: 0,
@@ -270,7 +272,8 @@ export default function DashboardMessages() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Messages</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Chat with your doctors after confirmed appointments.
+          Chat with your doctors after confirmed appointments, even after
+          completion.
         </p>
       </div>
 

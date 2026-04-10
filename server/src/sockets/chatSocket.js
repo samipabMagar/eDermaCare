@@ -69,7 +69,7 @@ export const setupChatSocket = (httpServer, corsOptions) => {
           throw new Error("appointmentId is required");
         }
 
-        await chatService.getConfirmedAppointmentForUser(
+        await chatService.getChatEnabledAppointmentForUser(
           socket.user.id,
           appointmentId,
         );
