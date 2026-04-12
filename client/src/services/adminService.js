@@ -121,6 +121,15 @@ export const adminService = {
     }
   },
 
+  async deleteBrand(brandId) {
+    try {
+      const response = await api.delete(`/brands/${brandId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to delete brand"));
+    }
+  },
+
   // Doctor Management
   async getPendingDoctors() {
     try {

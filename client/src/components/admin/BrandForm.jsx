@@ -60,7 +60,7 @@ const BrandForm = () => {
       setIsSaving(true);
       await adminService.createBrand(formData);
       toast.success("Brand created successfully");
-      router.push(ROUTES.ADMIN_PRODUCTS);
+      router.push(ROUTES.ADMIN_BRANDS);
       router.refresh();
     } catch (error) {
       toast.error(error.message || "Failed to create brand");

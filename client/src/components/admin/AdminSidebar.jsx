@@ -62,7 +62,7 @@ const AdminSidebar = () => {
     },
     {
       label: "Brands",
-      href: ROUTES.ADMIN_BRANDS_NEW,
+      href: ROUTES.ADMIN_BRANDS,
       icon: Factory,
       match: "startsWith",
     },
