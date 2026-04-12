@@ -108,6 +108,19 @@ export const adminService = {
     }
   },
 
+  async createBrand(formData) {
+    try {
+      const response = await api.post("/brands", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to create brand"));
+    }
+  },
+
   // Doctor Management
   async getPendingDoctors() {
     try {

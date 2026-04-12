@@ -22,6 +22,8 @@ export const ADMIN_USERS_ROUTE = "/admin/users";
 export const ADMIN_ORDERS_ROUTE = "/admin/orders";
 export const ADMIN_PRODUCTS_ROUTE = "/admin/products";
 export const ADMIN_PRODUCTS_NEW_ROUTE = "/admin/products/new";
+export const ADMIN_BRANDS_ROUTE = "/admin/brands";
+export const ADMIN_BRANDS_NEW_ROUTE = "/admin/brands/new";
 export const ADMIN_PENDING_DOCTORS_ROUTE = "/admin/doctors/pending";
 export const ADMIN_ALL_DOCTORS_ROUTE = "/admin/doctors";
 export const ADMIN_PROFILE_ROUTE = "/admin/profile";
@@ -50,6 +52,8 @@ export const ROUTES = {
   ADMIN_ORDERS: ADMIN_ORDERS_ROUTE,
   ADMIN_PRODUCTS: ADMIN_PRODUCTS_ROUTE,
   ADMIN_PRODUCTS_NEW: ADMIN_PRODUCTS_NEW_ROUTE,
+  ADMIN_BRANDS: ADMIN_BRANDS_ROUTE,
+  ADMIN_BRANDS_NEW: ADMIN_BRANDS_NEW_ROUTE,
   ADMIN_PENDING_DOCTORS: ADMIN_PENDING_DOCTORS_ROUTE,
   ADMIN_ALL_DOCTORS: ADMIN_ALL_DOCTORS_ROUTE,
   ADMIN_PROFILE: ADMIN_PROFILE_ROUTE,

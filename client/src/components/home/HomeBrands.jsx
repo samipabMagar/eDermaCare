@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Globe } from "lucide-react";
 import { productService } from "@/services/productService";
 import { PRODUCT_ROUTE } from "@/constants/routes";
+import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
 const MAX_BRANDS = 8;
 
@@ -20,8 +21,9 @@ const BrandCardSkeleton = () => (
 const BrandAvatar = ({ name, logoUrl }) => {
   const [hasImageError, setHasImageError] = useState(false);
   const initial = name?.charAt(0)?.toUpperCase() || "B";
+  const normalizedLogoUrl = resolveImageUrl(logoUrl);
 
-  if (!logoUrl || hasImageError) {
+  if (!normalizedLogoUrl || hasImageError) {
     return (
       <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#2FA4A9] to-[#1D7D82] text-sm font-extrabold text-white">
         {initial}
@@ -31,7 +33,7 @@ const BrandAvatar = ({ name, logoUrl }) => {
 
   return (
     <img
-      src={logoUrl}
+      src={normalizedLogoUrl}
       alt={`${name} logo`}
       className="h-10 w-10 rounded-xl border border-slate-200 bg-white object-cover"
       onError={() => setHasImageError(true)}

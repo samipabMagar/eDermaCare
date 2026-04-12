@@ -8,6 +8,7 @@ import {
   Users,
   ShoppingBag,
   Package,
+  Factory,
   Stethoscope,
   ClipboardCheck,
   UserCheck,
@@ -57,6 +58,12 @@ const AdminSidebar = () => {
       label: "Products",
       href: ROUTES.ADMIN_PRODUCTS,
       icon: Package,
+      match: "startsWith",
+    },
+    {
+      label: "Brands",
+      href: ROUTES.ADMIN_BRANDS_NEW,
+      icon: Factory,
       match: "startsWith",
     },
     {

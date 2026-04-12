@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const UPLOADS_ROOT = path.resolve(__dirname, "../../uploads");
 const PROFILES_DIR = path.join(UPLOADS_ROOT, "profiles");
 const PRODUCTS_DIR = path.join(UPLOADS_ROOT, "products");
+const BRANDS_DIR = path.join(UPLOADS_ROOT, "brands");
 
 const ensureDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
@@ -42,6 +43,20 @@ const productStorage = multer.diskStorage({
   },
 });
 
+// Brand logo storage configuration
+const brandStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    ensureDir(BRANDS_DIR);
+    cb(null, BRANDS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+    const ext = path.extname(file.originalname);
+    const imageName = `brand_${uniqueSuffix}${ext}`;
+    cb(null, imageName);
+  },
+});
+
 // File filter to allow only image files
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
@@ -64,15 +79,21 @@ export const productUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
 });
 
+export const brandUpload = multer({
+  storage: brandStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB logo
+});
+
 // Delete old profile image
 export const deleteOldImage = (imagePath) => {
-    if(imagePath) {
-        try {
-            fs.unlinkSync(imagePath);
-        }catch (error) {
-            console.error("Failed to delete old image:", error);
-        }
+  if (imagePath) {
+    try {
+      fs.unlinkSync(imagePath);
+    } catch (error) {
+      console.error("Failed to delete old image:", error);
     }
+  }
 };
 
 // Delete product images
