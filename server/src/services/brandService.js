@@ -18,14 +18,14 @@ class BrandService {
       ];
     }
 
-    if(isActive !== undefined){
+    if (isActive !== undefined) {
       whereClause.is_active = isActive;
     }
 
     const brands = await brandModel.findAll({
       where: whereClause,
       order: [["name", "ASC"]],
-    })
+    });
 
     return brands;
   }
@@ -40,6 +40,16 @@ class BrandService {
     }
 
     const brand = await brandModel.create(brandData);
+    return brand;
+  }
+
+  async getBrandById(id) {
+    const brand = await brandModel.findByPk(id);
+
+    if (!brand) {
+      throw new Error("Brand not found");
+    }
+
     return brand;
   }
 

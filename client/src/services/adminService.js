@@ -108,6 +108,15 @@ export const adminService = {
     }
   },
 
+  async getBrandById(brandId) {
+    try {
+      const response = await api.get(`/brands/${brandId}`);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to fetch brand"));
+    }
+  },
+
   async createBrand(formData) {
     try {
       const response = await api.post("/brands", formData, {
@@ -127,6 +136,19 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to delete brand"));
+    }
+  },
+
+  async updateBrand(brandId, formData) {
+    try {
+      const response = await api.put(`/brands/${brandId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to update brand"));
     }
   },
 

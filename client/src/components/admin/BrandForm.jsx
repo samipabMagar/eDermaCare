@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
@@ -9,20 +9,30 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { adminService } from "@/services/adminService";
 import { ROUTES } from "@/constants/routes";
+import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
-const BrandForm = () => {
+const BrandForm = ({ brand = null }) => {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedLogo, setSelectedLogo] = useState(null);
 
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: {
-      name: "",
-      description: "",
-      website_url: "",
-      is_active: true,
+      name: brand?.name || "",
+      description: brand?.description || "",
+      website_url: brand?.website_url || "",
+      is_active: brand?.is_active !== false,
     },
   });
+
+  useEffect(() => {
+    reset({
+      name: brand?.name || "",
+      description: brand?.description || "",
+      website_url: brand?.website_url || "",
+      is_active: brand?.is_active !== false,
+    });
+  }, [brand, reset]);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -58,16 +68,23 @@ const BrandForm = () => {
 
     try {
       setIsSaving(true);
-      await adminService.createBrand(formData);
-      toast.success("Brand created successfully");
+      if (brand?.brand_id) {
+        await adminService.updateBrand(brand.brand_id, formData);
+        toast.success("Brand updated successfully");
+      } else {
+        await adminService.createBrand(formData);
+        toast.success("Brand created successfully");
+      }
       router.push(ROUTES.ADMIN_BRANDS);
       router.refresh();
     } catch (error) {
-      toast.error(error.message || "Failed to create brand");
+      toast.error(error.message || "Failed to save brand");
     } finally {
       setIsSaving(false);
     }
   };
+
+  const existingLogoUrl = resolveImageUrl(brand?.logo_url);
 
   return (
     <form onSubmit={handleSubmit(submitForm)}>
@@ -161,6 +178,22 @@ const BrandForm = () => {
                 <X size={18} />
               </button>
             </div>
+          ) : existingLogoUrl ? (
+            <div className="mt-4 flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-2.5">
+              <img
+                src={existingLogoUrl}
+                alt={brand?.name || "Brand logo"}
+                className="h-14 w-14 rounded object-cover"
+              />
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-slate-800">
+                  Current logo
+                </h4>
+                <span className="text-sm text-slate-500">
+                  Upload a new file to replace it
+                </span>
+              </div>
+            </div>
           ) : null}
         </div>
 
@@ -194,7 +227,7 @@ const BrandForm = () => {
           disabled={isSaving}
           className="inline-flex cursor-pointer items-center rounded-lg bg-(--brand-primary) px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-(--brand-primary-hover) disabled:opacity-50"
         >
-          {isSaving ? "Saving..." : "Create Brand"}
+          {isSaving ? "Saving..." : brand ? "Update Brand" : "Create Brand"}
         </button>
       </div>
     </form>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Search, Trash2, Globe } from "lucide-react";
+import { Loader2, Search, Trash2, Globe, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminService } from "@/services/adminService";
@@ -208,20 +208,31 @@ const BrandManagementTable = () => {
                     </td>
 
                     <td className="px-4 py-4">
-                      <button
-                        type="button"
-                        onClick={() => confirmDelete(brand)}
-                        disabled={deletingId === brand.brand_id}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white transition hover:bg-rose-700 disabled:opacity-50"
-                        title="Delete brand"
-                        aria-label="Delete brand"
-                      >
-                        {deletingId === brand.brand_id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/brands/${brand.brand_id}/edit`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                          title="Edit brand"
+                          aria-label="Edit brand"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => confirmDelete(brand)}
+                          disabled={deletingId === brand.brand_id}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white transition hover:bg-rose-700 disabled:opacity-50"
+                          title="Delete brand"
+                          aria-label="Delete brand"
+                        >
+                          {deletingId === brand.brand_id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

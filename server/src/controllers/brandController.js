@@ -47,9 +47,32 @@ class BrandController {
     }
   }
 
+  async getBrandById(req, res) {
+    try {
+      const brand = await brandService.getBrandById(req.params.id);
+
+      return res.status(200).json({
+        success: true,
+        message: "Brand retrieved successfully",
+        data: brand,
+      });
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message || "Brand not found",
+      });
+    }
+  }
+
   async updateBrand(req, res) {
     try {
-      const brand = await brandService.updateBrand(req.params.id, req.body);
+      const brandData = { ...req.body };
+
+      if (req.file) {
+        brandData.logo_url = `uploads/brands/${req.file.filename}`;
+      }
+
+      const brand = await brandService.updateBrand(req.params.id, brandData);
 
       return res.status(200).json({
         success: true,

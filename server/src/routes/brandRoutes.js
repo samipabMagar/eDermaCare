@@ -13,6 +13,7 @@ import { handleUploadError } from "../middlewares/uploadMiddleware.js";
 const router = express.Router();
 
 router.get("/", brandController.getAllBrands);
+router.get("/:id", brandController.getBrandById);
 
 router.post(
   "/",
@@ -27,6 +28,8 @@ router.put(
   "/:id",
   authenticate,
   authorize("admin"),
+  brandUpload.single("logo"),
+  handleUploadError,
   validate(updateBrandSchema),
   brandController.updateBrand,
 );
