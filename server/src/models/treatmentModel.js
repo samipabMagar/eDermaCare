@@ -23,11 +23,35 @@ const treatmentModel = connection.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      validate: {
+        min: 0,
+      },
+    },
     image_url: {
       type: DataTypes.STRING(1024),
       allowNull: true,
       validate: {
-        isUrl: true,
+        isValidImageUrl(value) {
+          if (!value) return;
+
+          const isLocalUploadPath =
+            value.startsWith("uploads/") || value.startsWith("/uploads/");
+
+          if (isLocalUploadPath) {
+            return;
+          }
+
+          const isAbsoluteHttpUrl = /^https?:\/\//i.test(value);
+
+          if (!isAbsoluteHttpUrl) {
+            throw new Error(
+              "image_url must be a valid URL or a local uploads path",
+            );
+          }
+        },
       },
     },
     benefit_tags: {

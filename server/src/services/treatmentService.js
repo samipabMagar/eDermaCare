@@ -17,6 +17,7 @@ const DEFAULT_TREATMENTS = [
       "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&h=800&fit=crop",
     benefit_tags: ["Collagen Boost", "Hair Growth", "Natural Healing"],
     duration_minutes: 90,
+    price: 15000,
   },
   {
     name: "Microneedling",
@@ -26,6 +27,7 @@ const DEFAULT_TREATMENTS = [
       "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&h=800&fit=crop",
     benefit_tags: ["Collagen Production", "Pore Minimizing", "Scar Healing"],
     duration_minutes: 45,
+    price: 6000,
   },
   {
     name: "CO2 Laser Resurfacing",
@@ -35,6 +37,7 @@ const DEFAULT_TREATMENTS = [
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=800&fit=crop",
     benefit_tags: ["Scar Reduction", "Skin Tightening", "Texture Smoothing"],
     duration_minutes: 45,
+    price: 12000,
   },
   {
     name: "Hydrafacial",
@@ -44,6 +47,7 @@ const DEFAULT_TREATMENTS = [
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
     benefit_tags: ["Deep Hydration", "Pore Cleansing", "Even Skin Tone"],
     duration_minutes: 60,
+    price: 5000,
   },
   {
     name: "Chemical Peel",
@@ -53,6 +57,7 @@ const DEFAULT_TREATMENTS = [
       "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop",
     benefit_tags: ["Pigmentation Control", "Smooth Texture", "Brightening"],
     duration_minutes: 30,
+    price: 3500,
   },
 ];
 
@@ -110,6 +115,7 @@ class TreatmentService {
       name: payload.name,
       slug,
       description: payload.description || null,
+      price: payload.price ?? null,
       image_url: payload.image_url || null,
       benefit_tags: payload.benefit_tags || [],
       duration_minutes: payload.duration_minutes || null,
@@ -146,6 +152,10 @@ class TreatmentService {
 
     if (payload.description !== undefined) {
       updateData.description = payload.description || null;
+    }
+
+    if (payload.price !== undefined) {
+      updateData.price = payload.price;
     }
 
     if (payload.image_url !== undefined) {

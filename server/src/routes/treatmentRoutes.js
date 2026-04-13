@@ -9,6 +9,8 @@ import {
   createTreatmentAppointmentSchema,
   reviewTreatmentAppointmentSchema,
 } from "../validators/treatmentValidator.js";
+import { treatmentUpload } from "../configs/multerConfig.js";
+import { handleUploadError } from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -25,6 +27,8 @@ router.post(
   "/",
   authenticate,
   authorize("admin"),
+  treatmentUpload.single("image"),
+  handleUploadError,
   validate(createTreatmentSchema),
   treatmentController.createTreatment,
 );
@@ -33,6 +37,8 @@ router.patch(
   "/:treatmentId",
   authenticate,
   authorize("admin"),
+  treatmentUpload.single("image"),
+  handleUploadError,
   validate(updateTreatmentSchema),
   treatmentController.updateTreatment,
 );

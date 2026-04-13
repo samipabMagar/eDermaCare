@@ -48,7 +48,13 @@ class TreatmentController {
 
   async createTreatment(req, res) {
     try {
-      const treatment = await treatmentService.createTreatment(req.body);
+      const treatmentData = { ...req.body };
+
+      if (req.file) {
+        treatmentData.image_url = `uploads/treatments/${req.file.filename}`;
+      }
+
+      const treatment = await treatmentService.createTreatment(treatmentData);
 
       return res.status(201).json({
         success: true,
@@ -66,9 +72,15 @@ class TreatmentController {
   async updateTreatment(req, res) {
     try {
       const treatmentId = req.params.treatmentId;
+      const treatmentData = { ...req.body };
+
+      if (req.file) {
+        treatmentData.image_url = `uploads/treatments/${req.file.filename}`;
+      }
+
       const treatment = await treatmentService.updateTreatment(
         treatmentId,
-        req.body,
+        treatmentData,
       );
 
       return res.status(200).json({

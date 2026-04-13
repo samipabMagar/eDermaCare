@@ -147,7 +147,7 @@ const normalizeTreatments = (apiTreatments = []) => {
       image: imageUrl,
       duration: `${durationMinutes} min`,
       duration_minutes: durationMinutes,
-      price: visualMeta.price,
+      price: Number(item.price ?? visualMeta.price ?? 0),
       benefits: benefitTags,
     };
   });

@@ -239,18 +239,26 @@ export const adminService = {
     }
   },
 
-  async createTreatment(payload) {
+  async createTreatment(formData) {
     try {
-      const response = await api.post("/treatments", payload);
+      const response = await api.post("/treatments", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data?.data ?? null;
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to create treatment"));
     }
   },
 
-  async updateTreatment(treatmentId, payload) {
+  async updateTreatment(treatmentId, formData) {
     try {
-      const response = await api.patch(`/treatments/${treatmentId}`, payload);
+      const response = await api.patch(`/treatments/${treatmentId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data?.data ?? null;
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to update treatment"));

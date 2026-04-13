@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import {
   Clock,
@@ -11,14 +13,16 @@ import {
   Search,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import { adminService } from "@/services/adminService";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
 const initialForm = {
   name: "",
   description: "",
-  image_url: "",
+  price: "",
   benefit_tags: "",
   duration_minutes: "",
   is_active: true,
@@ -44,6 +48,7 @@ const TreatmentManagementTable = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState(null);
   const [form, setForm] = useState(initialForm);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [viewingTreatment, setViewingTreatment] = useState(null);
   const [confirmDiscontinue, setConfirmDiscontinue] = useState({
     open: false,
@@ -128,9 +133,26 @@ const TreatmentManagementTable = () => {
       });
   }, [search, statsByTreatmentId, treatments]);
 
+  const onDrop = useCallback((acceptedFiles) => {
+    setSelectedImage(acceptedFiles[0] || null);
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+      "image/gif": [".gif"],
+    },
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024,
+  });
+
   const openCreateModal = () => {
     setEditingTreatment(null);
     setForm(initialForm);
+    setSelectedImage(null);
     setIsModalOpen(true);
   };
 
@@ -139,7 +161,10 @@ const TreatmentManagementTable = () => {
     setForm({
       name: treatment.name || "",
       description: treatment.description || "",
-      image_url: treatment.image_url || "",
+      price:
+        treatment.price !== null && treatment.price !== undefined
+          ? String(treatment.price)
+          : "",
       benefit_tags: Array.isArray(treatment.benefit_tags)
         ? treatment.benefit_tags.join(", ")
         : "",
@@ -148,6 +173,7 @@ const TreatmentManagementTable = () => {
         : "",
       is_active: treatment.is_active !== false,
     });
+    setSelectedImage(null);
     setIsModalOpen(true);
   };
 
@@ -162,13 +188,36 @@ const TreatmentManagementTable = () => {
       return;
     }
 
+    if (!form.price) {
+      toast.error("Price is required");
+      return;
+    }
+
     const durationValue = Number(form.duration_minutes);
     if (!Number.isInteger(durationValue) || durationValue <= 0) {
       toast.error("Duration must be a positive whole number");
       return;
     }
 
+    const priceValue = Number(form.price);
+    if (Number.isNaN(priceValue) || priceValue < 0) {
+      toast.error("Price must be a valid positive number");
+      return;
+    }
+
     const tagArray = toTagArray(form.benefit_tags);
+    const formData = new FormData();
+    formData.append("name", form.name.trim());
+    if (form.description.trim()) {
+      formData.append("description", form.description.trim());
+    }
+    formData.append("price", String(priceValue));
+    formData.append("benefit_tags", JSON.stringify(tagArray));
+    formData.append("duration_minutes", String(durationValue));
+    formData.append("is_active", String(Boolean(form.is_active)));
+    if (selectedImage) {
+      formData.append("image", selectedImage);
+    }
 
     try {
       setIsSaving(true);
@@ -176,14 +225,7 @@ const TreatmentManagementTable = () => {
       if (editingTreatment) {
         const updated = await adminService.updateTreatment(
           editingTreatment.treatment_id,
-          {
-            name: form.name.trim(),
-            description: form.description.trim() || undefined,
-            image_url: form.image_url.trim() || undefined,
-            benefit_tags: tagArray,
-            duration_minutes: durationValue,
-            is_active: form.is_active,
-          },
+          formData,
         );
 
         setTreatments((prev) =>
@@ -196,14 +238,7 @@ const TreatmentManagementTable = () => {
 
         toast.success("Treatment updated successfully");
       } else {
-        const created = await adminService.createTreatment({
-          name: form.name.trim(),
-          description: form.description.trim() || undefined,
-          image_url: form.image_url.trim() || undefined,
-          benefit_tags: tagArray,
-          duration_minutes: durationValue,
-          is_active: form.is_active,
-        });
+        const created = await adminService.createTreatment(formData);
 
         setTreatments((prev) => [created, ...prev]);
         toast.success("Treatment created successfully");
@@ -221,9 +256,11 @@ const TreatmentManagementTable = () => {
     if (!confirmDiscontinue.treatment) return;
 
     try {
+      const formData = new FormData();
+      formData.append("is_active", "false");
       const updated = await adminService.updateTreatment(
         confirmDiscontinue.treatment.treatment_id,
-        { is_active: false },
+        formData,
       );
 
       setTreatments((prev) =>
@@ -393,16 +430,29 @@ const TreatmentManagementTable = () => {
       </div>
 
       {isModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-900">
-              {editingTreatment ? "Edit Treatment" : "Add Treatment"}
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Fill treatment details below.
-            </p>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4">
+          <div className="mx-auto my-6 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {editingTreatment ? "Edit Treatment" : "Add Treatment"}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Fill treatment details below.
+                </p>
+              </div>
 
-            <div className="mt-4 space-y-4">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                aria-label="Close modal"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="max-h-[calc(100vh-14rem)] space-y-4 overflow-y-auto px-5 py-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Name
@@ -414,6 +464,26 @@ const TreatmentManagementTable = () => {
                   }
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
                   placeholder="Treatment name"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Price (Rs)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      price: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
+                  placeholder="5000"
                 />
               </div>
 
@@ -437,19 +507,61 @@ const TreatmentManagementTable = () => {
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Image URL
+                  Treatment Image
                 </label>
-                <input
-                  value={form.image_url}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      image_url: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
-                  placeholder="https://example.com/treatment-image.jpg"
-                />
+                <div
+                  {...getRootProps()}
+                  className="flex w-full items-center justify-center"
+                >
+                  <div className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 transition hover:bg-slate-100">
+                    <div className="flex flex-col items-center justify-center py-6 text-slate-500">
+                      <p className="mb-1 text-sm text-slate-700">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs">
+                        .png, .jpg, .jpeg, .webp, .gif (Max 5MB)
+                      </p>
+                    </div>
+                    <input {...getInputProps()} type="file" />
+                  </div>
+                </div>
+
+                {selectedImage ? (
+                  <div className="mt-3 flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-2.5">
+                    <Image
+                      src={URL.createObjectURL(selectedImage)}
+                      width={56}
+                      height={56}
+                      alt="Treatment preview"
+                      className="h-14 w-14 rounded object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-800">
+                        {selectedImage.name}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {Math.round(selectedImage.size / 1024)} KB
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImage(null)}
+                      className="rounded bg-red-500 p-1.5 text-white hover:bg-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : editingTreatment?.image_url ? (
+                  <div className="mt-3 rounded-lg border border-slate-200 bg-white p-2.5">
+                    <img
+                      src={resolveImageUrl(editingTreatment.image_url)}
+                      alt={editingTreatment.name}
+                      className="h-24 w-full rounded object-cover"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">Current image</p>
+                  </div>
+                ) : null}
               </div>
 
               <div>
@@ -504,7 +616,7 @@ const TreatmentManagementTable = () => {
               </label>
             </div>
 
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
@@ -542,11 +654,17 @@ const TreatmentManagementTable = () => {
                   {viewingTreatment.status}
                 </span>
               </p>
+              <p>
+                <span className="font-semibold text-slate-700">Price:</span>{" "}
+                <span className="text-slate-900">
+                  Rs. {Number(viewingTreatment.price || 0).toLocaleString()}
+                </span>
+              </p>
               {viewingTreatment.image_url ? (
                 <div>
                   <span className="font-semibold text-slate-700">Image:</span>
                   <img
-                    src={viewingTreatment.image_url}
+                    src={resolveImageUrl(viewingTreatment.image_url)}
                     alt={viewingTreatment.name}
                     className="mt-2 h-28 w-full rounded-lg border border-slate-200 object-cover"
                   />

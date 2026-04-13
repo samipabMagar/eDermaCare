@@ -1,5 +1,44 @@
 import { z } from "zod";
 
+const benefitTagsSchema = z.preprocess(
+  (value) => {
+    if (Array.isArray(value)) return value;
+
+    if (typeof value === "string") {
+      const parsedValue = value.trim();
+      if (!parsedValue) return [];
+
+      try {
+        const parsed = JSON.parse(parsedValue);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch {
+        return parsedValue
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    return value;
+  },
+  z
+    .array(
+      z
+        .string({
+          invalid_type_error: "Each benefit tag must be a string",
+        })
+        .trim()
+        .min(1, "Benefit tag cannot be empty")
+        .max(60, "Benefit tag must not exceed 60 characters"),
+      {
+        invalid_type_error: "benefit_tags must be an array of strings",
+      },
+    )
+    .max(10, "benefit_tags must not exceed 10 items"),
+);
+
 export const createTreatmentSchema = z.object({
   name: z
     .string({
@@ -16,6 +55,13 @@ export const createTreatmentSchema = z.object({
     .trim()
     .max(2000, "Description must not exceed 2000 characters")
     .optional(),
+  price: z.coerce
+    .number({
+      invalid_type_error: "price must be a number",
+    })
+    .min(0, "price must be zero or positive")
+    .max(10000000, "price is too large")
+    .optional(),
   image_url: z
     .string({
       invalid_type_error: "image_url must be a string",
@@ -23,21 +69,7 @@ export const createTreatmentSchema = z.object({
     .trim()
     .url("image_url must be a valid URL")
     .optional(),
-  benefit_tags: z
-    .array(
-      z
-        .string({
-          invalid_type_error: "Each benefit tag must be a string",
-        })
-        .trim()
-        .min(1, "Benefit tag cannot be empty")
-        .max(60, "Benefit tag must not exceed 60 characters"),
-      {
-        invalid_type_error: "benefit_tags must be an array of strings",
-      },
-    )
-    .max(10, "benefit_tags must not exceed 10 items")
-    .optional(),
+  benefit_tags: benefitTagsSchema.optional(),
   duration_minutes: z.coerce
     .number({
       invalid_type_error: "duration_minutes must be a number",
@@ -46,11 +78,7 @@ export const createTreatmentSchema = z.object({
     .positive("duration_minutes must be a positive number")
     .max(1440, "duration_minutes must not exceed 1440")
     .optional(),
-  is_active: z
-    .boolean({
-      invalid_type_error: "is_active must be a boolean",
-    })
-    .optional(),
+  is_active: z.coerce.boolean().optional(),
 });
 
 export const updateTreatmentSchema = z.object({
@@ -69,6 +97,13 @@ export const updateTreatmentSchema = z.object({
     .trim()
     .max(2000, "Description must not exceed 2000 characters")
     .optional(),
+  price: z.coerce
+    .number({
+      invalid_type_error: "price must be a number",
+    })
+    .min(0, "price must be zero or positive")
+    .max(10000000, "price is too large")
+    .optional(),
   image_url: z
     .string({
       invalid_type_error: "image_url must be a string",
@@ -76,21 +111,7 @@ export const updateTreatmentSchema = z.object({
     .trim()
     .url("image_url must be a valid URL")
     .optional(),
-  benefit_tags: z
-    .array(
-      z
-        .string({
-          invalid_type_error: "Each benefit tag must be a string",
-        })
-        .trim()
-        .min(1, "Benefit tag cannot be empty")
-        .max(60, "Benefit tag must not exceed 60 characters"),
-      {
-        invalid_type_error: "benefit_tags must be an array of strings",
-      },
-    )
-    .max(10, "benefit_tags must not exceed 10 items")
-    .optional(),
+  benefit_tags: benefitTagsSchema.optional(),
   duration_minutes: z.coerce
     .number({
       invalid_type_error: "duration_minutes must be a number",
@@ -99,11 +120,7 @@ export const updateTreatmentSchema = z.object({
     .positive("duration_minutes must be a positive number")
     .max(1440, "duration_minutes must not exceed 1440")
     .optional(),
-  is_active: z
-    .boolean({
-      invalid_type_error: "is_active must be a boolean",
-    })
-    .optional(),
+  is_active: z.coerce.boolean().optional(),
 });
 
 export const createTreatmentAppointmentSchema = z.object({

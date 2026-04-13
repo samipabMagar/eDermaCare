@@ -9,6 +9,7 @@ const UPLOADS_ROOT = path.resolve(__dirname, "../../uploads");
 const PROFILES_DIR = path.join(UPLOADS_ROOT, "profiles");
 const PRODUCTS_DIR = path.join(UPLOADS_ROOT, "products");
 const BRANDS_DIR = path.join(UPLOADS_ROOT, "brands");
+const TREATMENTS_DIR = path.join(UPLOADS_ROOT, "treatments");
 
 const ensureDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
@@ -57,6 +58,20 @@ const brandStorage = multer.diskStorage({
   },
 });
 
+// Treatment image storage configuration
+const treatmentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    ensureDir(TREATMENTS_DIR);
+    cb(null, TREATMENTS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+    const ext = path.extname(file.originalname);
+    const imageName = `treatment_${uniqueSuffix}${ext}`;
+    cb(null, imageName);
+  },
+});
+
 // File filter to allow only image files
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
@@ -83,6 +98,12 @@ export const brandUpload = multer({
   storage: brandStorage,
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB logo
+});
+
+export const treatmentUpload = multer({
+  storage: treatmentStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB image
 });
 
 // Delete old profile image

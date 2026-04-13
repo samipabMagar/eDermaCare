@@ -22,6 +22,13 @@ export const ensureTreatmentTableColumns = async () => {
     });
   }
 
+  if (!columns.price) {
+    await queryInterface.addColumn("treatments", "price", {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    });
+  }
+
   if (!columns.benefit_tags) {
     await queryInterface.addColumn("treatments", "benefit_tags", {
       type: DataTypes.JSON,
