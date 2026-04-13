@@ -12,7 +12,6 @@ import {
   Search,
   Shield,
   Sparkles,
-  Star,
   Users,
   X,
   Zap,
@@ -36,10 +35,10 @@ const categories = [
 ];
 
 const sortOptions = [
-  { value: "popular", label: "Most Popular" },
+  { value: "name", label: "Name: A to Z" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
-  { value: "rating", label: "Highest Rated" },
+  { value: "duration", label: "Duration: Short to Long" },
 ];
 
 const iconByCategory = {
@@ -53,54 +52,39 @@ const iconByCategory = {
 
 const visualMetaBySlug = {
   hydrafacial: {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
-    duration: "60 min",
+    duration_minutes: 60,
     price: 5000,
-    rating: 4.9,
-    reviews: 328,
-    tag: "Most Popular",
-    benefits: ["Deep Hydration", "Pore Cleansing", "Even Skin Tone"],
+    benefit_tags: ["Deep Hydration", "Pore Cleansing", "Even Skin Tone"],
   },
   "prp-therapy": {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&h=800&fit=crop",
-    duration: "90 min",
+    duration_minutes: 90,
     price: 15000,
-    rating: 4.8,
-    reviews: 215,
-    tag: "Advanced",
-    benefits: ["Collagen Boost", "Hair Growth", "Natural Healing"],
+    benefit_tags: ["Collagen Boost", "Hair Growth", "Natural Healing"],
   },
   microneedling: {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&h=800&fit=crop",
-    duration: "45 min",
+    duration_minutes: 45,
     price: 6000,
-    rating: 4.7,
-    reviews: 198,
-    tag: "Trending",
-    benefits: ["Collagen Production", "Pore Minimizing", "Scar Healing"],
+    benefit_tags: ["Collagen Production", "Pore Minimizing", "Scar Healing"],
   },
   "co2-laser-resurfacing": {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=800&fit=crop",
-    duration: "45 min",
+    duration_minutes: 45,
     price: 12000,
-    rating: 4.7,
-    reviews: 189,
-    tag: "Premium",
-    benefits: ["Scar Reduction", "Wrinkle Removal", "Skin Tightening"],
+    benefit_tags: ["Scar Reduction", "Wrinkle Removal", "Skin Tightening"],
   },
   "chemical-peel": {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop",
-    duration: "30 min",
+    duration_minutes: 30,
     price: 3500,
-    rating: 4.6,
-    reviews: 274,
-    tag: "Essential",
-    benefits: ["Pigmentation Control", "Smooth Texture", "Brightening"],
+    benefit_tags: ["Pigmentation Control", "Smooth Texture", "Brightening"],
   },
 };
 
@@ -121,7 +105,7 @@ const classifyCategory = (name = "", description = "") => {
   return "facial";
 };
 
-const buildFallbackMeta = (category, index) => {
+const buildFallbackMeta = (category) => {
   const prices = {
     facial: 4500,
     laser: 12000,
@@ -131,26 +115,28 @@ const buildFallbackMeta = (category, index) => {
   };
 
   const basePrice = prices[category] ?? 5000;
-  const rating = Number((4.5 + (index % 5) * 0.1).toFixed(1));
-  const reviews = 90 + index * 23;
-
   return {
-    image:
+    image_url:
       "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1200&h=800&fit=crop",
-    duration: "45 min",
+    duration_minutes: 45,
     price: basePrice,
-    rating,
-    reviews,
-    tag: "Special Care",
-    benefits: ["Expert Care", "Safe Procedure", "Visible Results"],
+    benefit_tags: ["Expert Care", "Safe Procedure", "Visible Results"],
   };
 };
 
 const normalizeTreatments = (apiTreatments = []) => {
-  return apiTreatments.map((item, index) => {
+  return apiTreatments.map((item) => {
     const category = classifyCategory(item.name, item.description || "");
     const visualMeta =
-      visualMetaBySlug[item.slug] || buildFallbackMeta(category, index);
+      visualMetaBySlug[item.slug] || buildFallbackMeta(category);
+
+    const imageUrl = item.image_url || visualMeta.image_url;
+    const durationMinutes =
+      item.duration_minutes || visualMeta.duration_minutes;
+    const benefitTags =
+      Array.isArray(item.benefit_tags) && item.benefit_tags.length > 0
+        ? item.benefit_tags
+        : visualMeta.benefit_tags;
 
     return {
       treatment_id: item.treatment_id,
@@ -158,7 +144,11 @@ const normalizeTreatments = (apiTreatments = []) => {
       description: item.description || "Personalized dermatology treatment.",
       category,
       icon: iconByCategory[category] || Sparkles,
-      ...visualMeta,
+      image: imageUrl,
+      duration: `${durationMinutes} min`,
+      duration_minutes: durationMinutes,
+      price: visualMeta.price,
+      benefits: benefitTags,
     };
   });
 };
@@ -166,7 +156,7 @@ const normalizeTreatments = (apiTreatments = []) => {
 const TreatmentCatalog = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("popular");
+  const [sortBy, setSortBy] = useState("name");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [bookingTreatment, setBookingTreatment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -212,10 +202,12 @@ const TreatmentCatalog = () => {
         );
       })
       .sort((a, b) => {
+        if (sortBy === "name") return a.name.localeCompare(b.name);
         if (sortBy === "price-low") return a.price - b.price;
         if (sortBy === "price-high") return b.price - a.price;
-        if (sortBy === "rating") return b.rating - a.rating;
-        return b.reviews - a.reviews;
+        if (sortBy === "duration")
+          return a.duration_minutes - b.duration_minutes;
+        return a.name.localeCompare(b.name);
       });
   }, [activeCategory, searchQuery, sortBy, treatments]);
 
@@ -259,7 +251,7 @@ const TreatmentCatalog = () => {
         </div>
       </section>
 
-      <section className="sticky top-[65px] z-20 border-y border-slate-200 bg-white/85 backdrop-blur-xl">
+      <section className="sticky top-16 z-20 border-y border-slate-200 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center">
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -379,18 +371,6 @@ const TreatmentCatalog = () => {
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-[#0F9EA5]/95 px-2.5 py-1 text-xs font-semibold text-white">
-                      {treatment.tag}
-                    </span>
-                    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-white">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-semibold">
-                        {treatment.rating}
-                      </span>
-                      <span className="text-xs text-white/70">
-                        ({treatment.reviews})
-                      </span>
-                    </div>
                     <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-xs text-white/90">
                       <Clock className="h-3.5 w-3.5" />
                       <span>{treatment.duration}</span>

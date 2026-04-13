@@ -18,6 +18,9 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 const initialForm = {
   name: "",
   description: "",
+  image_url: "",
+  benefit_tags: "",
+  duration_minutes: "",
   is_active: true,
 };
 
@@ -26,16 +29,11 @@ const statusColor = {
   Discontinued: "bg-slate-200 text-slate-700",
 };
 
-const getDurationLabel = (description = "") => {
-  const normalized = description.toLowerCase();
-
-  if (normalized.includes("laser")) return "8 sessions";
-  if (normalized.includes("prp")) return "4 sessions";
-  if (normalized.includes("peel")) return "6 weeks";
-  if (normalized.includes("microneedl")) return "12 weeks";
-
-  return "6 weeks";
-};
+const toTagArray = (value = "") =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
 const TreatmentManagementTable = () => {
   const [treatments, setTreatments] = useState([]);
@@ -111,7 +109,9 @@ const TreatmentManagementTable = () => {
         return {
           ...treatment,
           doctor: "Assigned by booking",
-          avgDuration: getDurationLabel(treatment.description || ""),
+          avgDuration: treatment.duration_minutes
+            ? `${treatment.duration_minutes} min`
+            : "N/A",
           activePlans: stats.activePlans,
           completedPlans: stats.completedPlans,
           status: treatment.is_active === false ? "Discontinued" : "Active",
@@ -139,6 +139,13 @@ const TreatmentManagementTable = () => {
     setForm({
       name: treatment.name || "",
       description: treatment.description || "",
+      image_url: treatment.image_url || "",
+      benefit_tags: Array.isArray(treatment.benefit_tags)
+        ? treatment.benefit_tags.join(", ")
+        : "",
+      duration_minutes: treatment.duration_minutes
+        ? String(treatment.duration_minutes)
+        : "",
       is_active: treatment.is_active !== false,
     });
     setIsModalOpen(true);
@@ -150,6 +157,19 @@ const TreatmentManagementTable = () => {
       return;
     }
 
+    if (!form.duration_minutes) {
+      toast.error("Duration in minutes is required");
+      return;
+    }
+
+    const durationValue = Number(form.duration_minutes);
+    if (!Number.isInteger(durationValue) || durationValue <= 0) {
+      toast.error("Duration must be a positive whole number");
+      return;
+    }
+
+    const tagArray = toTagArray(form.benefit_tags);
+
     try {
       setIsSaving(true);
 
@@ -159,6 +179,9 @@ const TreatmentManagementTable = () => {
           {
             name: form.name.trim(),
             description: form.description.trim() || undefined,
+            image_url: form.image_url.trim() || undefined,
+            benefit_tags: tagArray,
+            duration_minutes: durationValue,
             is_active: form.is_active,
           },
         );
@@ -176,6 +199,9 @@ const TreatmentManagementTable = () => {
         const created = await adminService.createTreatment({
           name: form.name.trim(),
           description: form.description.trim() || undefined,
+          image_url: form.image_url.trim() || undefined,
+          benefit_tags: tagArray,
+          duration_minutes: durationValue,
           is_active: form.is_active,
         });
 
@@ -409,6 +435,59 @@ const TreatmentManagementTable = () => {
                 />
               </div>
 
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Image URL
+                </label>
+                <input
+                  value={form.image_url}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      image_url: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
+                  placeholder="https://example.com/treatment-image.jpg"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Benefit Tags (comma separated)
+                </label>
+                <input
+                  value={form.benefit_tags}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      benefit_tags: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
+                  placeholder="Collagen Production, Pore Minimizing"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.duration_minutes}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      duration_minutes: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-(--brand-primary)"
+                  placeholder="45"
+                />
+              </div>
+
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                 <input
                   type="checkbox"
@@ -463,6 +542,16 @@ const TreatmentManagementTable = () => {
                   {viewingTreatment.status}
                 </span>
               </p>
+              {viewingTreatment.image_url ? (
+                <div>
+                  <span className="font-semibold text-slate-700">Image:</span>
+                  <img
+                    src={viewingTreatment.image_url}
+                    alt={viewingTreatment.name}
+                    className="mt-2 h-28 w-full rounded-lg border border-slate-200 object-cover"
+                  />
+                </div>
+              ) : null}
               <p>
                 <span className="font-semibold text-slate-700">
                   Description:
@@ -487,6 +576,31 @@ const TreatmentManagementTable = () => {
                   {viewingTreatment.completedPlans}
                 </span>
               </p>
+              <p>
+                <span className="font-semibold text-slate-700">Duration:</span>{" "}
+                <span className="text-slate-900">
+                  {viewingTreatment.avgDuration}
+                </span>
+              </p>
+              <div>
+                <span className="font-semibold text-slate-700">
+                  Benefit Tags:
+                </span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(viewingTreatment.benefit_tags || []).length > 0 ? (
+                    viewingTreatment.benefit_tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-500">No tags</span>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="mt-5 flex justify-end">

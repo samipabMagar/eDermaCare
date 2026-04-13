@@ -13,26 +13,46 @@ const DEFAULT_TREATMENTS = [
     name: "PRP Therapy",
     description:
       "Platelet-Rich Plasma treatment to improve skin texture, elasticity and overall glow.",
+    image_url:
+      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&h=800&fit=crop",
+    benefit_tags: ["Collagen Boost", "Hair Growth", "Natural Healing"],
+    duration_minutes: 90,
   },
   {
     name: "Microneedling",
     description:
       "Collagen-inducing treatment for acne scars, enlarged pores and uneven skin texture.",
+    image_url:
+      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&h=800&fit=crop",
+    benefit_tags: ["Collagen Production", "Pore Minimizing", "Scar Healing"],
+    duration_minutes: 45,
   },
   {
     name: "CO2 Laser Resurfacing",
     description:
       "Fractional CO2 laser treatment targeting scars, pigmentation and deep wrinkles.",
+    image_url:
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=800&fit=crop",
+    benefit_tags: ["Scar Reduction", "Skin Tightening", "Texture Smoothing"],
+    duration_minutes: 45,
   },
   {
     name: "Hydrafacial",
     description:
       "Deep cleansing, exfoliation and hydration treatment for instant skin refresh.",
+    image_url:
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
+    benefit_tags: ["Deep Hydration", "Pore Cleansing", "Even Skin Tone"],
+    duration_minutes: 60,
   },
   {
     name: "Chemical Peel",
     description:
       "Medical-grade peel to reduce dullness, pigmentation and uneven skin tone.",
+    image_url:
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop",
+    benefit_tags: ["Pigmentation Control", "Smooth Texture", "Brightening"],
+    duration_minutes: 30,
   },
 ];
 
@@ -90,6 +110,9 @@ class TreatmentService {
       name: payload.name,
       slug,
       description: payload.description || null,
+      image_url: payload.image_url || null,
+      benefit_tags: payload.benefit_tags || [],
+      duration_minutes: payload.duration_minutes || null,
       is_active: payload.is_active ?? true,
     });
   }
@@ -123,6 +146,18 @@ class TreatmentService {
 
     if (payload.description !== undefined) {
       updateData.description = payload.description || null;
+    }
+
+    if (payload.image_url !== undefined) {
+      updateData.image_url = payload.image_url || null;
+    }
+
+    if (payload.benefit_tags !== undefined) {
+      updateData.benefit_tags = payload.benefit_tags || [];
+    }
+
+    if (payload.duration_minutes !== undefined) {
+      updateData.duration_minutes = payload.duration_minutes || null;
     }
 
     if (payload.is_active !== undefined) {

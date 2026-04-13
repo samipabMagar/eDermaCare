@@ -16,6 +16,36 @@ export const createTreatmentSchema = z.object({
     .trim()
     .max(2000, "Description must not exceed 2000 characters")
     .optional(),
+  image_url: z
+    .string({
+      invalid_type_error: "image_url must be a string",
+    })
+    .trim()
+    .url("image_url must be a valid URL")
+    .optional(),
+  benefit_tags: z
+    .array(
+      z
+        .string({
+          invalid_type_error: "Each benefit tag must be a string",
+        })
+        .trim()
+        .min(1, "Benefit tag cannot be empty")
+        .max(60, "Benefit tag must not exceed 60 characters"),
+      {
+        invalid_type_error: "benefit_tags must be an array of strings",
+      },
+    )
+    .max(10, "benefit_tags must not exceed 10 items")
+    .optional(),
+  duration_minutes: z.coerce
+    .number({
+      invalid_type_error: "duration_minutes must be a number",
+    })
+    .int("duration_minutes must be an integer")
+    .positive("duration_minutes must be a positive number")
+    .max(1440, "duration_minutes must not exceed 1440")
+    .optional(),
   is_active: z
     .boolean({
       invalid_type_error: "is_active must be a boolean",
@@ -38,6 +68,36 @@ export const updateTreatmentSchema = z.object({
     })
     .trim()
     .max(2000, "Description must not exceed 2000 characters")
+    .optional(),
+  image_url: z
+    .string({
+      invalid_type_error: "image_url must be a string",
+    })
+    .trim()
+    .url("image_url must be a valid URL")
+    .optional(),
+  benefit_tags: z
+    .array(
+      z
+        .string({
+          invalid_type_error: "Each benefit tag must be a string",
+        })
+        .trim()
+        .min(1, "Benefit tag cannot be empty")
+        .max(60, "Benefit tag must not exceed 60 characters"),
+      {
+        invalid_type_error: "benefit_tags must be an array of strings",
+      },
+    )
+    .max(10, "benefit_tags must not exceed 10 items")
+    .optional(),
+  duration_minutes: z.coerce
+    .number({
+      invalid_type_error: "duration_minutes must be a number",
+    })
+    .int("duration_minutes must be an integer")
+    .positive("duration_minutes must be a positive number")
+    .max(1440, "duration_minutes must not exceed 1440")
     .optional(),
   is_active: z
     .boolean({
