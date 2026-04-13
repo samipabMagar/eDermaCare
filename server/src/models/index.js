@@ -3,6 +3,8 @@ import doctorProfileModel from "./doctorProfileModel.js";
 import productModel from "./productModel.js";
 import brandModel from "./brandModel.js";
 import appointmentModel from "./appointmentModel.js";
+import treatmentModel from "./treatmentModel.js";
+import treatmentAppointmentModel from "./treatmentAppointmentModel.js";
 import cartModel from "./cartModel.js";
 import cartItemModel from "./cartItemModel.js";
 import orderModel from "./orderModel.js";
@@ -56,6 +58,39 @@ appointmentModel.belongsTo(userModel, {
 appointmentModel.belongsTo(userModel, {
   foreignKey: "doctor_user_id",
   as: "doctor",
+});
+
+// One-to-Many: Treatment has many treatment appointments
+treatmentModel.hasMany(treatmentAppointmentModel, {
+  foreignKey: "treatment_id",
+  as: "appointments",
+});
+
+treatmentAppointmentModel.belongsTo(treatmentModel, {
+  foreignKey: "treatment_id",
+  as: "treatment",
+});
+
+// One-to-Many: User has many treatment appointments
+userModel.hasMany(treatmentAppointmentModel, {
+  foreignKey: "user_id",
+  as: "userTreatmentAppointments",
+});
+
+treatmentAppointmentModel.belongsTo(userModel, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+// One-to-Many: Admin can review many treatment appointments
+userModel.hasMany(treatmentAppointmentModel, {
+  foreignKey: "reviewed_by_admin_id",
+  as: "reviewedTreatmentAppointments",
+});
+
+treatmentAppointmentModel.belongsTo(userModel, {
+  foreignKey: "reviewed_by_admin_id",
+  as: "reviewedByAdmin",
 });
 
 // One-to-One: User has one Cart
@@ -187,6 +222,8 @@ export {
   productModel,
   brandModel,
   appointmentModel,
+  treatmentModel,
+  treatmentAppointmentModel,
   cartModel,
   cartItemModel,
   orderModel,
