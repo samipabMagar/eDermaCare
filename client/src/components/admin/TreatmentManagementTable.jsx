@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import {
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Edit,
   Eye,
@@ -28,6 +30,8 @@ const initialForm = {
   is_active: true,
 };
 
+const PAGE_SIZE = 10;
+
 const statusColor = {
   Active: "bg-emerald-500/10 text-emerald-700",
   Discontinued: "bg-slate-200 text-slate-700",
@@ -44,6 +48,8 @@ const TreatmentManagementTable = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState(null);
@@ -58,12 +64,18 @@ const TreatmentManagementTable = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [allTreatments, allBookings] = await Promise.all([
-        adminService.getTreatments(),
+      const [treatmentResult, allBookings] = await Promise.all([
+        adminService.getTreatments({
+          page,
+          limit: PAGE_SIZE,
+          search: search.trim(),
+          sort: "name",
+        }),
         adminService.getTreatmentBookings({ limit: 200 }),
       ]);
 
-      setTreatments(allTreatments);
+      setTreatments(treatmentResult.treatments);
+      setPagination(treatmentResult.pagination);
       setBookings(allBookings);
     } catch (error) {
       toast.error(error.message || "Failed to load treatments");
@@ -74,7 +86,7 @@ const TreatmentManagementTable = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [page, search]);
 
   const statsByTreatmentId = useMemo(() => {
     const map = new Map();
@@ -104,34 +116,24 @@ const TreatmentManagementTable = () => {
   }, [bookings]);
 
   const rows = useMemo(() => {
-    return treatments
-      .map((treatment) => {
-        const stats = statsByTreatmentId.get(treatment.treatment_id) || {
-          activePlans: 0,
-          completedPlans: 0,
-        };
+    return treatments.map((treatment) => {
+      const stats = statsByTreatmentId.get(treatment.treatment_id) || {
+        activePlans: 0,
+        completedPlans: 0,
+      };
 
-        return {
-          ...treatment,
-          doctor: "Assigned by booking",
-          avgDuration: treatment.duration_minutes
-            ? `${treatment.duration_minutes} min`
-            : "N/A",
-          activePlans: stats.activePlans,
-          completedPlans: stats.completedPlans,
-          status: treatment.is_active === false ? "Discontinued" : "Active",
-        };
-      })
-      .filter((item) => {
-        if (!search.trim()) return true;
-
-        const q = search.toLowerCase();
-        return (
-          item.name?.toLowerCase().includes(q) ||
-          item.description?.toLowerCase().includes(q)
-        );
-      });
-  }, [search, statsByTreatmentId, treatments]);
+      return {
+        ...treatment,
+        doctor: "Assigned by booking",
+        avgDuration: treatment.duration_minutes
+          ? `${treatment.duration_minutes} min`
+          : "N/A",
+        activePlans: stats.activePlans,
+        completedPlans: stats.completedPlans,
+        status: treatment.is_active === false ? "Discontinued" : "Active",
+      };
+    });
+  }, [statsByTreatmentId, treatments]);
 
   const onDrop = useCallback((acceptedFiles) => {
     setSelectedImage(acceptedFiles[0] || null);
@@ -312,7 +314,10 @@ const TreatmentManagementTable = () => {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
               placeholder="Search treatments..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-700 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
             />
@@ -427,6 +432,39 @@ const TreatmentManagementTable = () => {
             </tbody>
           </table>
         </div>
+
+        {pagination ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3">
+            <p className="text-xs text-slate-500">
+              Page {pagination.page} of {pagination.totalPages} (
+              {pagination.totalItems} total)
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={!pagination.hasPrevPage}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPage((prev) => Math.min(pagination.totalPages, prev + 1))
+                }
+                disabled={!pagination.hasNextPage}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {isModalOpen ? (

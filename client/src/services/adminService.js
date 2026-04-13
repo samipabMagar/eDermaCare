@@ -230,10 +230,19 @@ export const adminService = {
   },
 
   // Treatment Management
-  async getTreatments() {
+  async getTreatments(filters = {}) {
     try {
-      const response = await api.get("/treatments/admin/all");
-      return response.data?.data ?? [];
+      const params = {};
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.search) params.search = filters.search;
+      if (filters.sort) params.sort = filters.sort;
+
+      const response = await api.get("/treatments/admin/all", { params });
+      return {
+        treatments: response.data?.data?.treatments ?? [],
+        pagination: response.data?.data?.pagination ?? null,
+      };
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to fetch treatments"));
     }

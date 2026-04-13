@@ -3,8 +3,12 @@ import treatmentService from "../services/treatmentService.js";
 class TreatmentController {
   async listTreatmentsForAdmin(req, res) {
     try {
-      const { treatments } = await treatmentService.listTreatments({
+      const { treatments, pagination } = await treatmentService.listTreatments({
         includeInactive: true,
+        search: req.query.search,
+        sort: req.query.sort,
+        page: req.query.page,
+        limit: req.query.limit,
       });
 
       return res.status(200).json({
@@ -13,7 +17,10 @@ class TreatmentController {
           treatments.length > 0
             ? "Treatments retrieved successfully"
             : "No treatments found",
-        data: treatments,
+        data: {
+          treatments,
+          pagination,
+        },
       });
     } catch (error) {
       return res.status(400).json({
