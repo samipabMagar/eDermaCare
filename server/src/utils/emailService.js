@@ -4,6 +4,8 @@ import {
   doctorRejectionEmailTemplate,
   appointmentConfirmedEmailTemplate,
   appointmentRejectedEmailTemplate,
+  treatmentBookingReviewedEmailTemplate,
+  treatmentReminderEmailTemplate,
 } from "../helpers/emailHelper.js";
 
 // Helper function to send email
@@ -78,4 +80,57 @@ export const sendAppointmentRejectionEmail = async ({
   });
 
   return await sendEmail(patientEmail, subject, html);
+};
+
+export const sendTreatmentBookingReviewedEmail = async ({
+  userEmail,
+  userName,
+  treatmentName,
+  sessionDate,
+  decision,
+  rejectionReason,
+}) => {
+  const sessionDateTime = format(
+    new Date(sessionDate),
+    "MMMM d, yyyy 'at' h:mm a",
+  );
+
+  const subject =
+    decision === "approved"
+      ? "Treatment Booking Approved - eDermaCare"
+      : "Treatment Booking Rejected - eDermaCare";
+
+  const html = treatmentBookingReviewedEmailTemplate({
+    userName,
+    treatmentName,
+    sessionDateTime,
+    decision,
+    rejectionReason,
+  });
+
+  return await sendEmail(userEmail, subject, html);
+};
+
+export const sendTreatmentSessionReminderEmail = async ({
+  userEmail,
+  userName,
+  treatmentName,
+  sessionDate,
+  reminderFrequency,
+}) => {
+  const sessionDateTime = format(
+    new Date(sessionDate),
+    "MMMM d, yyyy 'at' h:mm a",
+  );
+
+  const subject = `Treatment Session Reminder (${reminderFrequency}) - eDermaCare`;
+
+  const html = treatmentReminderEmailTemplate({
+    userName,
+    treatmentName,
+    sessionDateTime,
+    reminderFrequency,
+  });
+
+  return await sendEmail(userEmail, subject, html);
 };

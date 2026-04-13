@@ -11,6 +11,8 @@ import connection from "./configs/db.js";
 import "./models/index.js";
 import routes from "./routes/index.js";
 import { setupChatSocket } from "./sockets/chatSocket.js";
+import treatmentService from "./services/treatmentService.js";
+import { startTreatmentReminderScheduler } from "./utils/treatmentReminderScheduler.js";
 
 // Load environment variables
 dotenv.config();
@@ -88,8 +90,10 @@ connection
   })
   .then(() => {
     console.log("Database synced successfully.");
+    return treatmentService.seedDefaultTreatments();
   })
   .then(() => {
+    startTreatmentReminderScheduler();
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

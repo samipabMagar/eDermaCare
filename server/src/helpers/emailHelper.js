@@ -305,3 +305,116 @@ export const appointmentRejectedEmailTemplate = ({
     </table>
 </body>
 </html>`;
+
+export const treatmentBookingReviewedEmailTemplate = ({
+  userName,
+  treatmentName,
+  sessionDateTime,
+  decision,
+  rejectionReason,
+}) => {
+  const heading =
+    decision === "approved"
+      ? "Treatment Booking Approved"
+      : "Treatment Booking Rejected";
+
+  const details =
+    decision === "approved"
+      ? `<p style="margin: 0 0 14px; color: #374151; font-size: 15px; line-height: 1.6;">
+                        Your treatment session is scheduled for <strong>${sessionDateTime}</strong>.
+                 </p>`
+      : `<p style="margin: 0 0 8px; color: #374151; font-size: 15px; line-height: 1.6;">
+                        Your treatment booking request was not approved.
+                 </p>
+                 <p style="margin: 0; color: #7f1d1d; font-size: 14px; line-height: 1.6;">
+                        Reason: ${rejectionReason || "No reason provided."}
+                 </p>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${heading}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0; text-align: center;">
+                <table role="presentation" style="width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #2FA4A9 0%, #288A8E 100%); padding: 36px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">eDermaCare</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 34px 38px;">
+                            <h2 style="margin: 0 0 16px; color: #111827; font-size: 23px; text-align: center;">${heading}</h2>
+                            <p style="margin: 0 0 16px; color: #374151; font-size: 15px; line-height: 1.6; text-align: center;">
+                                Hello ${userName}, your booking for <strong>${treatmentName}</strong> has been reviewed by our admin team.
+                            </p>
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px;">
+                                ${details}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 24px 30px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0; color: #6b7280; font-size: 12px;">© ${new Date().getFullYear()} eDermaCare. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+};
+
+export const treatmentReminderEmailTemplate = ({
+  userName,
+  treatmentName,
+  sessionDateTime,
+  reminderFrequency,
+}) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treatment Reminder</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 40px 0; text-align: center;">
+                <table role="presentation" style="width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #2FA4A9 0%, #288A8E 100%); padding: 36px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">eDermaCare</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 34px 38px;">
+                            <h2 style="margin: 0 0 16px; color: #111827; font-size: 23px; text-align: center;">Upcoming Treatment Session Reminder</h2>
+                            <p style="margin: 0 0 10px; color: #374151; font-size: 15px; line-height: 1.6;">
+                                Hello ${userName}, this is your ${reminderFrequency} reminder for your upcoming treatment.
+                            </p>
+                            <p style="margin: 0 0 8px; color: #374151; font-size: 15px; line-height: 1.6;">
+                                Treatment: <strong>${treatmentName}</strong>
+                            </p>
+                            <p style="margin: 0; color: #374151; font-size: 15px; line-height: 1.6;">
+                                Session Date: <strong>${sessionDateTime}</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 24px 30px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0; color: #6b7280; font-size: 12px;">© ${new Date().getFullYear()} eDermaCare. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
