@@ -2,6 +2,7 @@ export const HOME_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
 export const REGISTER_ROUTE = "/register";
 export const PRODUCT_ROUTE = "/products";
+export const TREATMENTS_ROUTE = "/treatments";
 export const CART_ROUTE = "/cart";
 export const DOCTORS_ROUTE = "/doctors";
 export const USER_DASHBOARD_ROUTE = "/dashboard";
@@ -34,6 +35,7 @@ export const ROUTES = {
   LOGIN: LOGIN_ROUTE,
   REGISTER: REGISTER_ROUTE,
   PRODUCT: PRODUCT_ROUTE,
+  TREATMENTS: TREATMENTS_ROUTE,
   CART: CART_ROUTE,
   DOCTORS: DOCTORS_ROUTE,
   USER_DASHBOARD: USER_DASHBOARD_ROUTE,
