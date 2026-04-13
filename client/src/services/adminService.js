@@ -228,4 +228,48 @@ export const adminService = {
       );
     }
   },
+
+  // Treatment Management
+  async getTreatments() {
+    try {
+      const response = await api.get("/treatments/admin/all");
+      return response.data?.data ?? [];
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to fetch treatments"));
+    }
+  },
+
+  async createTreatment(payload) {
+    try {
+      const response = await api.post("/treatments", payload);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to create treatment"));
+    }
+  },
+
+  async updateTreatment(treatmentId, payload) {
+    try {
+      const response = await api.patch(`/treatments/${treatmentId}`, payload);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to update treatment"));
+    }
+  },
+
+  async getTreatmentBookings(filters = {}) {
+    try {
+      const params = {};
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.status) params.status = filters.status;
+
+      const response = await api.get("/treatments/bookings", { params });
+      return response.data?.data?.appointments ?? [];
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to fetch treatment bookings"),
+      );
+    }
+  },
 };

@@ -77,9 +77,9 @@ const AdminSidebar = () => {
   const otherItems = [
     {
       label: "Treatments",
-      href: null,
+      href: ROUTES.ADMIN_TREATMENTS,
       icon: ClipboardList,
-      match: "exact",
+      match: "startsWith",
     },
     {
       label: "Transactions",

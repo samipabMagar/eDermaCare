@@ -14,6 +14,13 @@ const router = express.Router();
 
 router.get("/", treatmentController.listTreatments);
 
+router.get(
+  "/admin/all",
+  authenticate,
+  authorize("admin"),
+  treatmentController.listTreatmentsForAdmin,
+);
+
 router.post(
   "/",
   authenticate,

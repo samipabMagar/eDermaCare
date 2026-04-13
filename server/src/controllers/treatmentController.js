@@ -1,6 +1,28 @@
 import treatmentService from "../services/treatmentService.js";
 
 class TreatmentController {
+  async listTreatmentsForAdmin(req, res) {
+    try {
+      const treatments = await treatmentService.listTreatments({
+        includeInactive: true,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message:
+          treatments.length > 0
+            ? "Treatments retrieved successfully"
+            : "No treatments found",
+        data: treatments,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to retrieve treatments",
+      });
+    }
+  }
+
   async listTreatments(req, res) {
     try {
       const includeInactive = req.user?.role === "admin";
