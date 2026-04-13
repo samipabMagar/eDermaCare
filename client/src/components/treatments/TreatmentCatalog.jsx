@@ -25,6 +25,36 @@ import TreatmentBookingModal from "@/components/treatments/TreatmentBookingModal
 import { treatmentService } from "@/services/treatmentService";
 import { DOCTORS_ROUTE } from "@/constants/routes";
 
+const PAGE_SIZE = 9;
+
+const getVisiblePages = (currentPage, totalPages) => {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 5];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
+  }
+
+  return [
+    currentPage - 2,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    currentPage + 2,
+  ];
+};
+
 const categories = [
   { id: "all", label: "All Treatments" },
   { id: "facial", label: "Facials" },
@@ -157,21 +187,32 @@ const TreatmentCatalog = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [page, setPage] = useState(1);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [bookingTreatment, setBookingTreatment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [treatments, setTreatments] = useState([]);
+  const [pagination, setPagination] = useState(null);
 
   useEffect(() => {
     const loadTreatments = async () => {
       try {
         setIsLoading(true);
         setError("");
-        const data = await treatmentService.getTreatments();
-        setTreatments(normalizeTreatments(data));
+        const { treatments: rows, pagination: paginationMeta } =
+          await treatmentService.getTreatments({
+            search: searchQuery,
+            category: activeCategory,
+            sort: sortBy,
+            page,
+            limit: PAGE_SIZE,
+          });
+        setTreatments(normalizeTreatments(rows));
+        setPagination(paginationMeta);
       } catch (err) {
         setTreatments([]);
+        setPagination(null);
         setError(err.message || "Failed to load treatments");
       } finally {
         setIsLoading(false);
@@ -179,37 +220,14 @@ const TreatmentCatalog = () => {
     };
 
     loadTreatments();
-  }, []);
+  }, [activeCategory, page, searchQuery, sortBy]);
 
   useEffect(() => {
     if (!error) return;
     toast.error(error);
   }, [error]);
 
-  const filteredTreatments = useMemo(() => {
-    return [...treatments]
-      .filter(
-        (treatment) =>
-          activeCategory === "all" || treatment.category === activeCategory,
-      )
-      .filter((treatment) => {
-        const normalizedQuery = searchQuery.trim().toLowerCase();
-        if (!normalizedQuery) return true;
-
-        return (
-          treatment.name.toLowerCase().includes(normalizedQuery) ||
-          treatment.description.toLowerCase().includes(normalizedQuery)
-        );
-      })
-      .sort((a, b) => {
-        if (sortBy === "name") return a.name.localeCompare(b.name);
-        if (sortBy === "price-low") return a.price - b.price;
-        if (sortBy === "price-high") return b.price - a.price;
-        if (sortBy === "duration")
-          return a.duration_minutes - b.duration_minutes;
-        return a.name.localeCompare(b.name);
-      });
-  }, [activeCategory, searchQuery, sortBy, treatments]);
+  const filteredTreatments = useMemo(() => treatments, [treatments]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -258,13 +276,19 @@ const TreatmentCatalog = () => {
             <input
               placeholder="Search treatments..."
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setPage(1);
+              }}
               className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-700 outline-none focus:border-[#0F9EA5]"
             />
             {searchQuery ? (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setPage(1);
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
               >
                 <X className="h-4 w-4" />
@@ -277,7 +301,10 @@ const TreatmentCatalog = () => {
               <button
                 key={category.id}
                 type="button"
-                onClick={() => setActiveCategory(category.id)}
+                onClick={() => {
+                  setActiveCategory(category.id);
+                  setPage(1);
+                }}
                 className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                   activeCategory === category.id
                     ? "bg-[#0F9EA5] text-white shadow"
@@ -310,6 +337,7 @@ const TreatmentCatalog = () => {
                     type="button"
                     onClick={() => {
                       setSortBy(option.value);
+                      setPage(1);
                       setShowSortDropdown(false);
                     }}
                     className={`w-full px-4 py-2.5 text-left text-sm ${
@@ -331,7 +359,7 @@ const TreatmentCatalog = () => {
         <p className="text-sm text-slate-500">
           Showing{" "}
           <span className="font-semibold text-slate-800">
-            {filteredTreatments.length}
+            {pagination?.totalItems ?? filteredTreatments.length}
           </span>{" "}
           treatments
         </p>
@@ -436,6 +464,58 @@ const TreatmentCatalog = () => {
             </p>
           </div>
         )}
+
+        {pagination ? (
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
+            <button
+              type="button"
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={!pagination.hasPrevPage}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {getVisiblePages(pagination.page, pagination.totalPages).map(
+                (pageNumber) => {
+                  const isCurrent = pagination.page === pageNumber;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => setPage(pageNumber)}
+                      aria-current={isCurrent ? "page" : undefined}
+                      className={`min-w-9 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                        isCurrent
+                          ? "bg-[#2FA4A9] text-white"
+                          : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                },
+              )}
+            </div>
+
+            <span className="text-xs font-medium text-slate-500">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPage((prev) => Math.min(pagination.totalPages, prev + 1))
+              }
+              disabled={!pagination.hasNextPage}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
       </section>
 
       <section className="bg-linear-to-r from-[#0F9EA5] to-[#25888d] py-16">

@@ -70,6 +70,23 @@ const toSlug = (value) =>
     .slice(0, 140);
 
 class TreatmentService {
+  classifyCategory(name = "", description = "") {
+    const value = `${name} ${description}`.toLowerCase();
+
+    if (value.includes("laser")) return "laser";
+    if (
+      value.includes("prp") ||
+      value.includes("filler") ||
+      value.includes("botox")
+    ) {
+      return "injectable";
+    }
+    if (value.includes("hair")) return "hair";
+    if (value.includes("body")) return "body";
+
+    return "facial";
+  }
+
   async seedDefaultTreatments() {
     for (const treatment of DEFAULT_TREATMENTS) {
       const slug = toSlug(treatment.name);
@@ -89,13 +106,83 @@ class TreatmentService {
     }
   }
 
-  async listTreatments({ includeInactive = false } = {}) {
+  async listTreatments({
+    includeInactive = false,
+    search,
+    category,
+    sort,
+    page,
+    limit,
+  } = {}) {
     const whereClause = includeInactive ? {} : { is_active: true };
 
-    return await treatmentModel.findAll({
+    if (search) {
+      whereClause[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    const rows = await treatmentModel.findAll({
       where: whereClause,
       order: [["name", "ASC"]],
     });
+
+    let treatments = rows.filter((item) => {
+      if (!category || category === "all") {
+        return true;
+      }
+
+      return (
+        this.classifyCategory(item.name, item.description || "") === category
+      );
+    });
+
+    if (sort === "price-low") {
+      treatments.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+    } else if (sort === "price-high") {
+      treatments.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+    } else if (sort === "duration") {
+      treatments.sort(
+        (a, b) =>
+          Number(a.duration_minutes || 0) - Number(b.duration_minutes || 0),
+      );
+    } else {
+      treatments.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const parsedPage = Number.parseInt(page, 10);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const hasPagination =
+      Number.isInteger(parsedPage) &&
+      parsedPage > 0 &&
+      Number.isInteger(parsedLimit) &&
+      parsedLimit > 0;
+
+    if (!hasPagination) {
+      return {
+        treatments,
+        pagination: null,
+      };
+    }
+
+    const totalItems = treatments.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / parsedLimit));
+    const safePage = Math.min(parsedPage, totalPages);
+    const start = (safePage - 1) * parsedLimit;
+    const end = start + parsedLimit;
+
+    return {
+      treatments: treatments.slice(start, end),
+      pagination: {
+        page: safePage,
+        limit: parsedLimit,
+        totalItems,
+        totalPages,
+        hasPrevPage: safePage > 1,
+        hasNextPage: safePage < totalPages,
+      },
+    };
   }
 
   async createTreatment(payload) {

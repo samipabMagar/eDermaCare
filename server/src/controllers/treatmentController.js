@@ -3,7 +3,7 @@ import treatmentService from "../services/treatmentService.js";
 class TreatmentController {
   async listTreatmentsForAdmin(req, res) {
     try {
-      const treatments = await treatmentService.listTreatments({
+      const { treatments } = await treatmentService.listTreatments({
         includeInactive: true,
       });
 
@@ -26,8 +26,13 @@ class TreatmentController {
   async listTreatments(req, res) {
     try {
       const includeInactive = req.user?.role === "admin";
-      const treatments = await treatmentService.listTreatments({
+      const { treatments, pagination } = await treatmentService.listTreatments({
         includeInactive,
+        search: req.query.search,
+        category: req.query.category,
+        sort: req.query.sort,
+        page: req.query.page || 1,
+        limit: req.query.limit || 9,
       });
 
       return res.status(200).json({
@@ -37,6 +42,7 @@ class TreatmentController {
             ? "Treatments retrieved successfully"
             : "No treatments found",
         data: treatments,
+        pagination,
       });
     } catch (error) {
       return res.status(400).json({

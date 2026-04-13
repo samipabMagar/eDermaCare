@@ -9,10 +9,21 @@ const getApiErrorMessage = (error, fallbackMessage) => {
 };
 
 export const treatmentService = {
-  async getTreatments() {
+  async getTreatments(filters = {}) {
     try {
-      const response = await api.get("/treatments");
-      return response.data?.data ?? [];
+      const params = {};
+      if (filters.search) params.search = filters.search;
+      if (filters.category) params.category = filters.category;
+      if (filters.sort) params.sort = filters.sort;
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+
+      const response = await api.get("/treatments", { params });
+
+      return {
+        treatments: response.data?.data ?? [],
+        pagination: response.data?.pagination ?? null,
+      };
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to load treatments"));
     }
