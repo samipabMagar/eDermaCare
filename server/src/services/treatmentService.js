@@ -174,6 +174,18 @@ class TreatmentService {
       throw new Error("Treatment not found");
     }
 
+    const linkedAppointmentsCount = await treatmentAppointmentModel.count({
+      where: {
+        treatment_id: treatment.treatment_id,
+      },
+    });
+
+    if (linkedAppointmentsCount > 0) {
+      throw new Error(
+        `Cannot delete treatment because ${linkedAppointmentsCount} booking(s) exist for it. Delete the related bookings first.`,
+      );
+    }
+
     await treatment.destroy();
     return treatment;
   }

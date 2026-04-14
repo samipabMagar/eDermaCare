@@ -119,7 +119,11 @@ class TreatmentController {
         data: treatment,
       });
     } catch (error) {
-      return res.status(400).json({
+      const isConflictError = error.message?.startsWith(
+        "Cannot delete treatment because",
+      );
+
+      return res.status(isConflictError ? 409 : 400).json({
         success: false,
         message: error.message || "Failed to delete treatment",
       });
