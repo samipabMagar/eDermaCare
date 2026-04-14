@@ -67,6 +67,7 @@ const TreatmentManagementTable = () => {
     treatment: null,
   });
   const [reviewingBookingId, setReviewingBookingId] = useState(null);
+  const [bookingWindowFilter, setBookingWindowFilter] = useState("upcoming");
 
   const loadData = async () => {
     try {
@@ -151,6 +152,33 @@ const TreatmentManagementTable = () => {
       (a, b) => new Date(b.created_at) - new Date(a.created_at),
     );
   }, [bookings]);
+
+  const windowFilteredBookings = useMemo(() => {
+    const now = new Date();
+    const nextWeek = new Date(now);
+    nextWeek.setDate(now.getDate() + 7);
+
+    const upcoming = allBookings.filter((booking) => {
+      if (booking.status !== "approved") {
+        return false;
+      }
+
+      return new Date(booking.session_date) >= now;
+    });
+
+    if (bookingWindowFilter === "upcoming") {
+      return upcoming;
+    }
+
+    if (bookingWindowFilter === "this-week") {
+      return upcoming.filter((booking) => {
+        const sessionDate = new Date(booking.session_date);
+        return sessionDate <= nextWeek;
+      });
+    }
+
+    return allBookings;
+  }, [allBookings, bookingWindowFilter]);
 
   const onDrop = useCallback((acceptedFiles) => {
     setSelectedImage(acceptedFiles[0] || null);
@@ -629,9 +657,47 @@ const TreatmentManagementTable = () => {
 
       <div className="rounded-2xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-900">
-            All Treatment Bookings ({allBookings.length})
-          </h3>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-sm font-semibold text-slate-900">
+              All Treatment Bookings ({allBookings.length})
+            </h3>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setBookingWindowFilter("upcoming")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  bookingWindowFilter === "upcoming"
+                    ? "bg-[#0F9EA5] text-white"
+                    : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                Upcoming
+              </button>
+              <button
+                type="button"
+                onClick={() => setBookingWindowFilter("this-week")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  bookingWindowFilter === "this-week"
+                    ? "bg-[#0F9EA5] text-white"
+                    : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                This Week
+              </button>
+              <button
+                type="button"
+                onClick={() => setBookingWindowFilter("all")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  bookingWindowFilter === "all"
+                    ? "bg-[#0F9EA5] text-white"
+                    : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                All
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -660,17 +726,17 @@ const TreatmentManagementTable = () => {
             </thead>
 
             <tbody>
-              {allBookings.length === 0 ? (
+              {windowFilteredBookings.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
                     className="px-4 py-8 text-center text-sm text-slate-500"
                   >
-                    No treatment bookings available.
+                    No bookings found for selected view.
                   </td>
                 </tr>
               ) : (
-                allBookings.map((booking) => {
+                windowFilteredBookings.map((booking) => {
                   const statusClass =
                     bookingStatusColor[booking.status] ||
                     bookingStatusColor.pending;
