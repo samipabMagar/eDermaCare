@@ -37,6 +37,12 @@ const statusColor = {
   Discontinued: "bg-slate-200 text-slate-700",
 };
 
+const bookingStatusColor = {
+  pending: "bg-blue-50 text-blue-700 border-blue-200",
+  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  rejected: "bg-rose-50 text-rose-700 border-rose-200",
+};
+
 const toTagArray = (value = "") =>
   value
     .split(",")
@@ -138,6 +144,12 @@ const TreatmentManagementTable = () => {
 
   const pendingBookings = useMemo(() => {
     return bookings.filter((booking) => booking.status === "pending");
+  }, [bookings]);
+
+  const allBookings = useMemo(() => {
+    return [...bookings].sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    );
   }, [bookings]);
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -513,7 +525,7 @@ const TreatmentManagementTable = () => {
       <div className="rounded-2xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-4 py-3">
           <h3 className="text-sm font-semibold text-slate-900">
-            Pending Treatment Booking Requests
+            Pending Treatment Booking Requests ({pendingBookings.length})
           </h3>
         </div>
 
@@ -523,6 +535,9 @@ const TreatmentManagementTable = () => {
               <tr className="border-b border-slate-200">
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Contact
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Treatment
@@ -543,7 +558,7 @@ const TreatmentManagementTable = () => {
               {pendingBookings.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-sm text-slate-500"
                   >
                     No pending treatment booking requests.
@@ -561,6 +576,12 @@ const TreatmentManagementTable = () => {
                     >
                       <td className="px-4 py-3 text-slate-700">
                         {booking.user?.full_name || "Unknown User"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        <p>{booking.user?.email || "-"}</p>
+                        <p className="text-xs text-slate-500">
+                          {booking.user?.phone || "No phone"}
+                        </p>
                       </td>
                       <td className="px-4 py-3 text-slate-700">
                         {booking.treatment?.name || "Unknown Treatment"}
@@ -596,6 +617,95 @@ const TreatmentManagementTable = () => {
                             Reject
                           </button>
                         </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-3">
+          <h3 className="text-sm font-semibold text-slate-900">
+            All Treatment Bookings ({allBookings.length})
+          </h3>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Contact
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Treatment
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Session Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Requested On
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {allBookings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-8 text-center text-sm text-slate-500"
+                  >
+                    No treatment bookings available.
+                  </td>
+                </tr>
+              ) : (
+                allBookings.map((booking) => {
+                  const statusClass =
+                    bookingStatusColor[booking.status] ||
+                    bookingStatusColor.pending;
+
+                  return (
+                    <tr
+                      key={`all-${booking.treatment_appointment_id}`}
+                      className="border-b border-slate-100"
+                    >
+                      <td className="px-4 py-3 text-slate-700">
+                        {booking.user?.full_name || "Unknown User"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        <p>{booking.user?.email || "-"}</p>
+                        <p className="text-xs text-slate-500">
+                          {booking.user?.phone || "No phone"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {booking.treatment?.name || "Unknown Treatment"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {new Date(booking.session_date).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusClass}`}
+                        >
+                          {booking.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {booking.created_at
+                          ? new Date(booking.created_at).toLocaleString()
+                          : "-"}
                       </td>
                     </tr>
                   );

@@ -1,4 +1,5 @@
 import transporter from "../configs/email.js";
+import { format } from "date-fns";
 import {
   doctorApprovalEmailTemplate,
   doctorRejectionEmailTemplate,

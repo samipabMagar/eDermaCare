@@ -337,7 +337,7 @@ class TreatmentService {
         {
           model: userModel,
           as: "user",
-          attributes: ["user_id", "full_name", "email"],
+          attributes: ["user_id", "full_name", "email", "phone", "gender"],
         },
         {
           model: userModel,

@@ -10,18 +10,26 @@ export const startTreatmentReminderScheduler = () => {
 
   hasStarted = true;
 
-  cron.schedule("0 9 * * *", async () => {
-    try {
-      const appointments =
-        await treatmentService.getApprovedAppointmentsForReminder();
+  cron.schedule(
+    "0 9 * * *",
+    async () => {
+      try {
+        const appointments =
+          await treatmentService.getApprovedAppointmentsForReminder();
 
-      for (const appointment of appointments) {
-        await treatmentService.sendTreatmentReminderIfDue(appointment);
+        for (const appointment of appointments) {
+          await treatmentService.sendTreatmentReminderIfDue(appointment);
+        }
+      } catch (error) {
+        console.error("Treatment reminder scheduler failed:", error);
       }
-    } catch (error) {
-      console.error("Treatment reminder scheduler failed:", error);
-    }
-  });
+    },
+    {
+      timezone: "Asia/Kathmandu",
+    },
+  );
 
-  console.log("Treatment reminder scheduler started (runs daily at 09:00)");
+  console.log(
+    "Treatment reminder scheduler started (runs daily at 09:00 Asia/Kathmandu)",
+  );
 };
