@@ -16,6 +16,43 @@ const toSlug = (value) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 140);
 
+const NEPAL_TIMEZONE = "Asia/Kathmandu";
+
+const getNepalWeekday = (date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: NEPAL_TIMEZONE,
+    weekday: "short",
+  }).format(date);
+
+const getNepalTimeInMinutes = (date) => {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: NEPAL_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const hour = Number(parts.find((item) => item.type === "hour")?.value || 0);
+  const minute = Number(
+    parts.find((item) => item.type === "minute")?.value || 0,
+  );
+
+  return hour * 60 + minute;
+};
+
+const isNepalBookingWindow = (date) => {
+  const weekday = getNepalWeekday(date);
+  if (weekday === "Sat") {
+    return false;
+  }
+
+  const timeInMinutes = getNepalTimeInMinutes(date);
+  const startMinutes = 9 * 60;
+  const endMinutes = 18 * 60;
+
+  return timeInMinutes >= startMinutes && timeInMinutes <= endMinutes;
+};
+
 class TreatmentService {
   async listTreatments({
     includeInactive = false,
@@ -205,6 +242,12 @@ class TreatmentService {
 
     if (sessionDate <= new Date()) {
       throw new Error("Session date must be in the future");
+    }
+
+    if (!isNepalBookingWindow(sessionDate)) {
+      throw new Error(
+        "Booking is available Sunday to Friday between 9:00 AM and 6:00 PM Nepal time",
+      );
     }
 
     return await treatmentAppointmentModel.create({

@@ -41,4 +41,18 @@ export const treatmentService = {
       throw err;
     }
   },
+
+  async getMyTreatmentBookings(filters = {}) {
+    try {
+      const params = {};
+      if (filters.status) params.status = filters.status;
+
+      const response = await api.get("/treatments/bookings/my", { params });
+      return response.data?.data ?? [];
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to load treatment bookings"),
+      );
+    }
+  },
 };

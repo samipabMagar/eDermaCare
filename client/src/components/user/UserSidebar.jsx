@@ -29,6 +29,11 @@ const mainItems = [
     icon: Calendar,
   },
   {
+    label: "Treatments",
+    href: ROUTES.USER_DASHBOARD_TREATMENTS,
+    icon: Calendar,
+  },
+  {
     label: "Order History",
     href: ROUTES.USER_DASHBOARD_ORDER_HISTORY,
     icon: ShoppingBag,
