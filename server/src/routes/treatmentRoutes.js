@@ -43,6 +43,13 @@ router.patch(
   treatmentController.updateTreatment,
 );
 
+router.delete(
+  "/:treatmentId",
+  authenticate,
+  authorize("admin"),
+  treatmentController.deleteTreatment,
+);
+
 router.post(
   "/bookings",
   authenticate,

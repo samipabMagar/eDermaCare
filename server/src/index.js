@@ -11,7 +11,6 @@ import connection from "./configs/db.js";
 import "./models/index.js";
 import routes from "./routes/index.js";
 import { setupChatSocket } from "./sockets/chatSocket.js";
-import treatmentService from "./services/treatmentService.js";
 import { startTreatmentReminderScheduler } from "./utils/treatmentReminderScheduler.js";
 import { ensureTreatmentTableColumns } from "./utils/ensureTreatmentTableColumns.js";
 
@@ -92,9 +91,6 @@ connection
   .then(() => {
     console.log("Database synced successfully.");
     return ensureTreatmentTableColumns();
-  })
-  .then(() => {
-    return treatmentService.seedDefaultTreatments();
   })
   .then(() => {
     startTreatmentReminderScheduler();

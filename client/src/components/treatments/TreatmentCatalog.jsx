@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -11,14 +11,8 @@ import {
   Filter,
   Search,
   Shield,
-  Sparkles,
   Users,
   X,
-  Zap,
-  Sun,
-  Droplets,
-  Leaf,
-  Heart,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import TreatmentBookingModal from "@/components/treatments/TreatmentBookingModal";
@@ -55,15 +49,6 @@ const getVisiblePages = (currentPage, totalPages) => {
   ];
 };
 
-const categories = [
-  { id: "all", label: "All Treatments" },
-  { id: "facial", label: "Facials" },
-  { id: "laser", label: "Laser" },
-  { id: "injectable", label: "Injectables" },
-  { id: "body", label: "Body" },
-  { id: "hair", label: "Hair" },
-];
-
 const sortOptions = [
   { value: "name", label: "Name: A to Z" },
   { value: "price-low", label: "Price: Low to High" },
@@ -71,120 +56,27 @@ const sortOptions = [
   { value: "duration", label: "Duration: Short to Long" },
 ];
 
-const iconByCategory = {
-  facial: Sparkles,
-  laser: Sun,
-  injectable: Zap,
-  body: Droplets,
-  hair: Leaf,
-  all: Heart,
-};
-
-const visualMetaBySlug = {
-  hydrafacial: {
-    image_url:
-      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
-    duration_minutes: 60,
-    price: 5000,
-    benefit_tags: ["Deep Hydration", "Pore Cleansing", "Even Skin Tone"],
-  },
-  "prp-therapy": {
-    image_url:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&h=800&fit=crop",
-    duration_minutes: 90,
-    price: 15000,
-    benefit_tags: ["Collagen Boost", "Hair Growth", "Natural Healing"],
-  },
-  microneedling: {
-    image_url:
-      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&h=800&fit=crop",
-    duration_minutes: 45,
-    price: 6000,
-    benefit_tags: ["Collagen Production", "Pore Minimizing", "Scar Healing"],
-  },
-  "co2-laser-resurfacing": {
-    image_url:
-      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=800&fit=crop",
-    duration_minutes: 45,
-    price: 12000,
-    benefit_tags: ["Scar Reduction", "Wrinkle Removal", "Skin Tightening"],
-  },
-  "chemical-peel": {
-    image_url:
-      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop",
-    duration_minutes: 30,
-    price: 3500,
-    benefit_tags: ["Pigmentation Control", "Smooth Texture", "Brightening"],
-  },
-};
-
-const classifyCategory = (name = "", description = "") => {
-  const value = `${name} ${description}`.toLowerCase();
-
-  if (value.includes("laser")) return "laser";
-  if (
-    value.includes("prp") ||
-    value.includes("filler") ||
-    value.includes("botox")
-  ) {
-    return "injectable";
-  }
-  if (value.includes("hair")) return "hair";
-  if (value.includes("body")) return "body";
-
-  return "facial";
-};
-
-const buildFallbackMeta = (category) => {
-  const prices = {
-    facial: 4500,
-    laser: 12000,
-    injectable: 15000,
-    body: 18000,
-    hair: 9000,
-  };
-
-  const basePrice = prices[category] ?? 5000;
-  return {
-    image_url:
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=1200&h=800&fit=crop",
-    duration_minutes: 45,
-    price: basePrice,
-    benefit_tags: ["Expert Care", "Safe Procedure", "Visible Results"],
-  };
-};
-
 const normalizeTreatments = (apiTreatments = []) => {
   return apiTreatments.map((item) => {
-    const category = classifyCategory(item.name, item.description || "");
-    const visualMeta =
-      visualMetaBySlug[item.slug] || buildFallbackMeta(category);
-
-    const imageUrl = item.image_url || visualMeta.image_url;
-    const durationMinutes =
-      item.duration_minutes || visualMeta.duration_minutes;
-    const benefitTags =
-      Array.isArray(item.benefit_tags) && item.benefit_tags.length > 0
-        ? item.benefit_tags
-        : visualMeta.benefit_tags;
+    const durationMinutes = item.duration_minutes || null;
+    const benefitTags = Array.isArray(item.benefit_tags)
+      ? item.benefit_tags
+      : [];
 
     return {
       treatment_id: item.treatment_id,
       name: item.name,
-      description: item.description || "Personalized dermatology treatment.",
-      category,
-      icon: iconByCategory[category] || Sparkles,
-      image: imageUrl,
-      duration: `${durationMinutes} min`,
+      description: item.description || "No description available.",
+      image: item.image_url || null,
+      duration: durationMinutes ? `${durationMinutes} min` : "N/A",
       duration_minutes: durationMinutes,
-      price: Number(item.price ?? visualMeta.price ?? 0),
+      price: Number(item.price ?? 0),
       benefits: benefitTags,
     };
   });
 };
 
 const TreatmentCatalog = () => {
-  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [page, setPage] = useState(1);
@@ -203,7 +95,6 @@ const TreatmentCatalog = () => {
         const { treatments: rows, pagination: paginationMeta } =
           await treatmentService.getTreatments({
             search: searchQuery,
-            category: activeCategory,
             sort: sortBy,
             page,
             limit: PAGE_SIZE,
@@ -220,14 +111,12 @@ const TreatmentCatalog = () => {
     };
 
     loadTreatments();
-  }, [activeCategory, page, searchQuery, sortBy]);
+  }, [page, searchQuery, sortBy]);
 
   useEffect(() => {
     if (!error) return;
     toast.error(error);
   }, [error]);
-
-  const filteredTreatments = useMemo(() => treatments, [treatments]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -296,25 +185,7 @@ const TreatmentCatalog = () => {
             ) : null}
           </div>
 
-          <div className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => {
-                  setActiveCategory(category.id);
-                  setPage(1);
-                }}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                  activeCategory === category.id
-                    ? "bg-[#0F9EA5] text-white shadow"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
+          <div className="flex-1" />
 
           <div className="relative">
             <button
@@ -359,7 +230,7 @@ const TreatmentCatalog = () => {
         <p className="text-sm text-slate-500">
           Showing{" "}
           <span className="font-semibold text-slate-800">
-            {pagination?.totalItems ?? filteredTreatments.length}
+            {pagination?.totalItems ?? treatments.length}
           </span>{" "}
           treatments
         </p>
@@ -382,22 +253,26 @@ const TreatmentCatalog = () => {
               </div>
             ))}
           </div>
-        ) : filteredTreatments.length ? (
+        ) : treatments.length ? (
           <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTreatments.map((treatment) => {
-              const Icon = treatment.icon || Sparkles;
-
+            {treatments.map((treatment) => {
               return (
                 <article
                   key={treatment.treatment_id}
                   className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={treatment.image}
-                      alt={treatment.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    {treatment.image ? (
+                      <img
+                        src={treatment.image}
+                        alt={treatment.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-medium text-slate-500">
+                        No image
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-xs text-white/90">
                       <Clock className="h-3.5 w-3.5" />
@@ -411,10 +286,6 @@ const TreatmentCatalog = () => {
                         <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#0F9EA5]">
                           {treatment.name}
                         </h3>
-                        <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                          <Icon className="h-3.5 w-3.5" />
-                          {treatment.category}
-                        </p>
                       </div>
                       <div className="text-right">
                         <span className="text-[11px] text-slate-500">from</span>

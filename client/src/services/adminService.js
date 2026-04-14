@@ -274,6 +274,15 @@ export const adminService = {
     }
   },
 
+  async deleteTreatment(treatmentId) {
+    try {
+      await api.delete(`/treatments/${treatmentId}`);
+      return true;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to delete treatment"));
+    }
+  },
+
   async getTreatmentBookings(filters = {}) {
     try {
       const params = {};

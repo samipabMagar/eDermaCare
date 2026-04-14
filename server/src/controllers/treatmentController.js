@@ -36,7 +36,6 @@ class TreatmentController {
       const { treatments, pagination } = await treatmentService.listTreatments({
         includeInactive,
         search: req.query.search,
-        category: req.query.category,
         sort: req.query.sort,
         page: req.query.page || 1,
         limit: req.query.limit || 9,
@@ -105,6 +104,24 @@ class TreatmentController {
       return res.status(400).json({
         success: false,
         message: error.message || "Failed to update treatment",
+      });
+    }
+  }
+
+  async deleteTreatment(req, res) {
+    try {
+      const treatmentId = req.params.treatmentId;
+      const treatment = await treatmentService.deleteTreatment(treatmentId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Treatment deleted successfully",
+        data: treatment,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Failed to delete treatment",
       });
     }
   }

@@ -56,7 +56,7 @@ const TreatmentManagementTable = () => {
   const [form, setForm] = useState(initialForm);
   const [selectedImage, setSelectedImage] = useState(null);
   const [viewingTreatment, setViewingTreatment] = useState(null);
-  const [confirmDiscontinue, setConfirmDiscontinue] = useState({
+  const [confirmDelete, setConfirmDelete] = useState({
     open: false,
     treatment: null,
   });
@@ -254,29 +254,28 @@ const TreatmentManagementTable = () => {
     }
   };
 
-  const handleDiscontinue = async () => {
-    if (!confirmDiscontinue.treatment) return;
+  const handleDeleteTreatment = async () => {
+    if (!confirmDelete.treatment) return;
 
     try {
-      const formData = new FormData();
-      formData.append("is_active", "false");
-      const updated = await adminService.updateTreatment(
-        confirmDiscontinue.treatment.treatment_id,
-        formData,
-      );
+      await adminService.deleteTreatment(confirmDelete.treatment.treatment_id);
 
       setTreatments((prev) =>
-        prev.map((item) =>
-          item.treatment_id === confirmDiscontinue.treatment.treatment_id
-            ? updated
-            : item,
+        prev.filter(
+          (item) => item.treatment_id !== confirmDelete.treatment.treatment_id,
         ),
       );
 
-      toast.success("Treatment marked as discontinued");
-      setConfirmDiscontinue({ open: false, treatment: null });
+      if (rows.length === 1 && page > 1) {
+        setPage((prev) => Math.max(1, prev - 1));
+      } else {
+        await loadData();
+      }
+
+      toast.success("Treatment deleted successfully");
+      setConfirmDelete({ open: false, treatment: null });
     } catch (error) {
-      toast.error(error.message || "Failed to discontinue treatment");
+      toast.error(error.message || "Failed to delete treatment");
     }
   };
 
@@ -417,10 +416,10 @@ const TreatmentManagementTable = () => {
                         <button
                           type="button"
                           onClick={() =>
-                            setConfirmDiscontinue({ open: true, treatment })
+                            setConfirmDelete({ open: true, treatment })
                           }
                           className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                          title="Discontinue"
+                          title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -773,13 +772,13 @@ const TreatmentManagementTable = () => {
       ) : null}
 
       <ConfirmModal
-        isOpen={confirmDiscontinue.open}
-        title="Discontinue Treatment"
-        message={`Are you sure you want to discontinue ${confirmDiscontinue.treatment?.name || "this treatment"}?`}
-        confirmText="Discontinue"
+        isOpen={confirmDelete.open}
+        title="Delete Treatment"
+        message={`Are you sure you want to delete ${confirmDelete.treatment?.name || "this treatment"}?`}
+        confirmText="Delete"
         cancelText="Cancel"
-        onConfirm={handleDiscontinue}
-        onCancel={() => setConfirmDiscontinue({ open: false, treatment: null })}
+        onConfirm={handleDeleteTreatment}
+        onCancel={() => setConfirmDelete({ open: false, treatment: null })}
       />
     </div>
   );
