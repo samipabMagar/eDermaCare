@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import TreatmentBookingModal from "@/components/treatments/TreatmentBookingModal";
 import { treatmentService } from "@/services/treatmentService";
 import { DOCTORS_ROUTE } from "@/constants/routes";
+import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
 const PAGE_SIZE = 9;
 
@@ -67,7 +68,7 @@ const normalizeTreatments = (apiTreatments = []) => {
       treatment_id: item.treatment_id,
       name: item.name,
       description: item.description || "No description available.",
-      image: item.image_url || null,
+      image: item.image_url ? resolveImageUrl(item.image_url) : null,
       duration: durationMinutes ? `${durationMinutes} min` : "N/A",
       duration_minutes: durationMinutes,
       price: Number(item.price ?? 0),

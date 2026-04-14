@@ -298,4 +298,18 @@ export const adminService = {
       );
     }
   },
+
+  async reviewTreatmentBooking(treatmentAppointmentId, payload) {
+    try {
+      const response = await api.patch(
+        `/treatments/bookings/${treatmentAppointmentId}/review`,
+        payload,
+      );
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to review treatment booking"),
+      );
+    }
+  },
 };

@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { addDays, addMonths, isAfter, isBefore } from "date-fns";
+import { addMonths, isAfter, isBefore } from "date-fns";
 import treatmentModel from "../models/treatmentModel.js";
 import treatmentAppointmentModel from "../models/treatmentAppointmentModel.js";
 import userModel from "../models/userModel.js";
@@ -211,7 +211,7 @@ class TreatmentService {
       user_id: userId,
       treatment_id: payload.treatment_id,
       session_date: sessionDate,
-      reminder_frequency: payload.reminder_frequency,
+      reminder_frequency: "monthly",
       user_notes: payload.user_notes || null,
       status: "pending",
     });
@@ -420,24 +420,6 @@ class TreatmentService {
       ? new Date(appointment.last_reminder_sent_at)
       : null;
 
-    if (appointment.reminder_frequency === "weekly") {
-      const windowStart = addDays(sessionDate, -7);
-      const inWindow =
-        (isAfter(now, windowStart) ||
-          now.getTime() === windowStart.getTime()) &&
-        isBefore(now, sessionDate);
-
-      if (!inWindow) {
-        return false;
-      }
-
-      if (!lastSent) {
-        return true;
-      }
-
-      return addDays(lastSent, 7) <= now;
-    }
-
     const windowStart = addMonths(sessionDate, -1);
     const inWindow =
       (isAfter(now, windowStart) || now.getTime() === windowStart.getTime()) &&
@@ -465,7 +447,7 @@ class TreatmentService {
         userName: appointment.user.full_name,
         treatmentName: appointment.treatment.name,
         sessionDate: appointment.session_date,
-        reminderFrequency: appointment.reminder_frequency,
+        reminderFrequency: "monthly",
       });
 
       await appointment.update({

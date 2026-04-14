@@ -60,6 +60,7 @@ const TreatmentManagementTable = () => {
     open: false,
     treatment: null,
   });
+  const [reviewingBookingId, setReviewingBookingId] = useState(null);
 
   const loadData = async () => {
     try {
@@ -134,6 +135,10 @@ const TreatmentManagementTable = () => {
       };
     });
   }, [statsByTreatmentId, treatments]);
+
+  const pendingBookings = useMemo(() => {
+    return bookings.filter((booking) => booking.status === "pending");
+  }, [bookings]);
 
   const onDrop = useCallback((acceptedFiles) => {
     setSelectedImage(acceptedFiles[0] || null);
@@ -276,6 +281,45 @@ const TreatmentManagementTable = () => {
       setConfirmDelete({ open: false, treatment: null });
     } catch (error) {
       toast.error(error.message || "Failed to delete treatment");
+    }
+  };
+
+  const handleReviewBooking = async (booking, decision) => {
+    const payload = {
+      decision,
+    };
+
+    if (decision === "rejected") {
+      const reason = window.prompt("Rejection reason (required):", "")?.trim();
+
+      if (!reason) {
+        toast.error("Rejection reason is required");
+        return;
+      }
+
+      payload.rejection_reason = reason;
+    }
+
+    try {
+      setReviewingBookingId(booking.treatment_appointment_id);
+      const updated = await adminService.reviewTreatmentBooking(
+        booking.treatment_appointment_id,
+        payload,
+      );
+
+      setBookings((prev) =>
+        prev.map((item) =>
+          item.treatment_appointment_id === booking.treatment_appointment_id
+            ? updated
+            : item,
+        ),
+      );
+
+      toast.success(`Booking ${decision} successfully`);
+    } catch (error) {
+      toast.error(error.message || "Failed to review booking");
+    } finally {
+      setReviewingBookingId(null);
     }
   };
 
@@ -464,6 +508,102 @@ const TreatmentManagementTable = () => {
             </div>
           </div>
         ) : null}
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-3">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Pending Treatment Booking Requests
+          </h3>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Treatment
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Session Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Notes
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Action
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {pendingBookings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-8 text-center text-sm text-slate-500"
+                  >
+                    No pending treatment booking requests.
+                  </td>
+                </tr>
+              ) : (
+                pendingBookings.map((booking) => {
+                  const isReviewing =
+                    reviewingBookingId === booking.treatment_appointment_id;
+
+                  return (
+                    <tr
+                      key={booking.treatment_appointment_id}
+                      className="border-b border-slate-100"
+                    >
+                      <td className="px-4 py-3 text-slate-700">
+                        {booking.user?.full_name || "Unknown User"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {booking.treatment?.name || "Unknown Treatment"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {new Date(booking.session_date).toLocaleString()}
+                      </td>
+                      <td className="max-w-xs px-4 py-3 text-slate-600">
+                        <p className="line-clamp-2">
+                          {booking.user_notes || "-"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            disabled={isReviewing}
+                            onClick={() =>
+                              handleReviewBooking(booking, "approved")
+                            }
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isReviewing}
+                            onClick={() =>
+                              handleReviewBooking(booking, "rejected")
+                            }
+                            className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isModalOpen ? (

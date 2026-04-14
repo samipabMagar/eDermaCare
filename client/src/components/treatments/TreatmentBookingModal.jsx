@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Clock3, FileText, X } from "lucide-react";
+import { Calendar, FileText, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { treatmentService } from "@/services/treatmentService";
 
@@ -28,7 +28,6 @@ const formatDateTimeLabel = (isoDate) => {
 
 const TreatmentBookingModal = ({ open, onClose, treatment }) => {
   const [sessionDate, setSessionDate] = useState("");
-  const [reminderFrequency, setReminderFrequency] = useState("weekly");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
@@ -36,7 +35,6 @@ const TreatmentBookingModal = ({ open, onClose, treatment }) => {
   useEffect(() => {
     if (!open) {
       setSessionDate("");
-      setReminderFrequency("weekly");
       setNotes("");
       setIsSubmitting(false);
       setIsBooked(false);
@@ -73,7 +71,7 @@ const TreatmentBookingModal = ({ open, onClose, treatment }) => {
       await treatmentService.createTreatmentBooking({
         treatment_id: treatment.treatment_id,
         session_date: new Date(sessionDate).toISOString(),
-        reminder_frequency: reminderFrequency,
+        reminder_frequency: "monthly",
         user_notes: notes.trim() || undefined,
       });
 
@@ -142,20 +140,9 @@ const TreatmentBookingModal = ({ open, onClose, treatment }) => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
-                <span className="mb-1.5 flex items-center gap-2">
-                  <Clock3 className="h-4 w-4 text-[#0F9EA5]" />
-                  Reminder frequency
-                </span>
-                <select
-                  value={reminderFrequency}
-                  onChange={(event) => setReminderFrequency(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#0F9EA5]"
-                >
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </label>
+              <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                Reminder schedule: Monthly
+              </p>
 
               <label className="block text-sm font-medium text-slate-700">
                 <span className="mb-1.5 flex items-center gap-2">

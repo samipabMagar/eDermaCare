@@ -137,8 +137,8 @@ export const createTreatmentAppointmentSchema = z.object({
       invalid_type_error: "session_date must be an ISO datetime string",
     })
     .datetime("session_date must be a valid ISO datetime"),
-  reminder_frequency: z.enum(["weekly", "monthly"], {
-    invalid_type_error: "reminder_frequency must be weekly or monthly",
+  reminder_frequency: z.enum(["monthly"], {
+    invalid_type_error: "reminder_frequency must be monthly",
   }),
   user_notes: z
     .string({
