@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { addMonths, isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore } from "date-fns";
 import treatmentModel from "../models/treatmentModel.js";
 import treatmentAppointmentModel from "../models/treatmentAppointmentModel.js";
 import userModel from "../models/userModel.js";
@@ -463,7 +463,8 @@ class TreatmentService {
       ? new Date(appointment.last_reminder_sent_at)
       : null;
 
-    const windowStart = addMonths(sessionDate, -1);
+    // Send a single reminder only within the final 24-hour window.
+    const windowStart = addDays(sessionDate, -1);
     const inWindow =
       (isAfter(now, windowStart) || now.getTime() === windowStart.getTime()) &&
       isBefore(now, sessionDate);
@@ -472,11 +473,7 @@ class TreatmentService {
       return false;
     }
 
-    if (!lastSent) {
-      return true;
-    }
-
-    return addMonths(lastSent, 1) <= now;
+    return !lastSent;
   }
 
   async sendTreatmentReminderIfDue(appointment) {
@@ -490,7 +487,7 @@ class TreatmentService {
         userName: appointment.user.full_name,
         treatmentName: appointment.treatment.name,
         sessionDate: appointment.session_date,
-        reminderFrequency: "monthly",
+        reminderFrequency: "day-before",
       });
 
       await appointment.update({
