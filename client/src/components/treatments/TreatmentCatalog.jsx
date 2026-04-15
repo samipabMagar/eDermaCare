@@ -121,36 +121,47 @@ const TreatmentCatalog = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <section className="relative overflow-hidden bg-linear-to-br from-teal-50 via-white to-cyan-50 pb-14 pt-14">
-        <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-[#2FA4A9]/10 blur-3xl" />
-        <div className="absolute bottom-8 left-10 h-56 w-56 rounded-full bg-amber-200/20 blur-3xl" />
+      <section className="relative overflow-hidden pb-14 pt-14">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1713085085470-fba013d67e65?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+          }}
+        />
 
-        <div className="relative mx-auto w-full max-w-7xl px-6">
+        <div className="absolute inset-0 bg-white/50" />
+        <div className="absolute inset-0 bg-linear-to-t from-white/50 via-white/50 to-transparent" />
+
+        <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-[#2FA4A9]/20 blur-3xl" />
+        <div className="absolute bottom-8 left-10 h-56 w-56 rounded-full bg-amber-200/30 blur-3xl" />
+
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F9EA5]">
+            <span className="inline-block rounded-full bg-white/60 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#0F9EA5] shadow-sm backdrop-blur-sm">
               Our Treatments
             </span>
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
               Premium Skincare{" "}
-              <span className="bg-linear-to-r from-[#0F9EA5] to-[#2FA4A9] bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-[#0F9EA5] to-[#2FA4A9] bg-clip-text text-transparent drop-shadow-sm">
                 Treatments
               </span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+            <p className="mx-auto mt-4 max-w-2xl text-lg font-medium text-slate-700">
               Advanced dermatological procedures performed by specialists using
               modern treatment technology and personalized care plans.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-slate-700">
+              <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-4 py-2 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70">
                 <Award className="h-4 w-4 text-[#0F9EA5]" />
                 <span>Board Certified</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-4 py-2 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70">
                 <Users className="h-4 w-4 text-[#0F9EA5]" />
                 <span>10,000+ Patients</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-4 py-2 shadow-sm backdrop-blur-sm transition-colors hover:bg-white/70">
                 <Shield className="h-4 w-4 text-[#0F9EA5]" />
                 <span>FDA Approved</span>
               </div>
