@@ -5,6 +5,7 @@ export const PRODUCT_ROUTE = "/products";
 export const TREATMENTS_ROUTE = "/treatments";
 export const CART_ROUTE = "/cart";
 export const DOCTORS_ROUTE = "/doctors";
+export const ABOUT_ROUTE = "/about";
 export const USER_DASHBOARD_ROUTE = "/dashboard";
 export const USER_DASHBOARD_ORDERS_ROUTE = "/dashboard/orders";
 export const USER_DASHBOARD_APPOINTMENTS_ROUTE = "/dashboard/appointments";
