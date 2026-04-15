@@ -70,6 +70,7 @@ const ProductForm = ({ product }) => {
       category: product?.category || "",
       stock_quantity: product?.stock_quantity || 0,
       description: product?.description || "",
+      ingredients: product?.ingredients || "",
     },
   });
 
@@ -110,6 +111,7 @@ const ProductForm = ({ product }) => {
     formData.append("category", data.category);
     formData.append("stock_quantity", data.stock_quantity || 0);
     if (data.description) formData.append("description", data.description);
+    if (data.ingredients) formData.append("ingredients", data.ingredients);
     if (skinTypes.length > 0) formData.append("skin_type", JSON.stringify(skinTypes));
     if (skinConcerns.length > 0) formData.append("skin_concern", JSON.stringify(skinConcerns));
 
@@ -379,6 +381,21 @@ const ProductForm = ({ product }) => {
             placeholder="Your description here"
             {...register("description")}
           />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Ingredients
+          </label>
+          <textarea
+            rows={4}
+            className="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
+            placeholder="e.g. Hyaluronic Acid, Vitamin C, Niacinamide"
+            {...register("ingredients")}
+          />
+          <p className="mt-1.5 text-xs text-slate-400">
+            Separate each ingredient with a comma. These will be displayed as individual badges on the product page.
+          </p>
         </div>
       </div>
 
