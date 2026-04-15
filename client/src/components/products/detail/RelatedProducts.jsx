@@ -11,7 +11,7 @@ import {
 } from "@/utils/products/productCardHelpers";
 import useAddToCart from "@/hooks/useAddToCart";
 
-// ─── Single related product card ────────────────────────────────────────────
+
 const RelatedCard = ({ product }) => {
   const imagePath = getFirstImagePath(product.images);
   const imageUrl = resolveImageUrl(imagePath);
@@ -30,7 +30,7 @@ const RelatedCard = ({ product }) => {
       href={`/products/${product.product_id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/10"
     >
-      {/* Image */}
+  
       <div className="relative overflow-hidden bg-gradient-to-br from-[#E8F7F8] to-[#DDF2F3]">
         {imageUrl ? (
           <img
@@ -95,7 +95,7 @@ const RelatedCard = ({ product }) => {
   );
 };
 
-// ─── Skeleton loader ─────────────────────────────────────────────────────────
+
 const SkeletonCard = () => (
   <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
     <div className="h-44 bg-slate-200" />
@@ -111,7 +111,6 @@ const SkeletonCard = () => (
   </div>
 );
 
-// ─── Main section ─────────────────────────────────────────────────────────────
 const RelatedProducts = ({ productId }) => {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,7 +131,7 @@ const RelatedProducts = ({ productId }) => {
     return () => { cancelled = true; };
   }, [productId]);
 
-  // Don't render the section if there's nothing to show and we're done loading
+
   if (!loading && related.length === 0) return null;
 
   return (

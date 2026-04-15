@@ -1,53 +1,66 @@
 @import "tailwindcss";
 
 :root {
-	--gold-soft: #f5e6b3;
-	--gold-accent: #e7c873;
-	--gold-deep: #c9a13a;
-	--brand-primary: #2fa4a9;
-	--brand-primary-hover: #25888d;
-	--brand-primary-soft: #e8f7f8;
-	--brand-primary-text: #1d7d82;
+  --gold-soft: #f5e6b3;
+  --gold-accent: #e7c873;
+  --gold-deep: #c9a13a;
+  --brand-primary: #2fa4a9;
+  --brand-primary-hover: #25888d;
+  --brand-primary-soft: #e8f7f8;
+  --brand-primary-text: #1d7d82;
 }
 
 @font-face {
-  font-family:"Poppins" ;
-  src: url("/fonts/Poppins-Regular.ttf") format("truetype"),
-  url("/fonts/Poppins-Medium.ttf") format("truetype");
+  font-family: "Poppins";
+  src:
+    url("/fonts/Poppins-Regular.ttf") format("truetype"),
+    url("/fonts/Poppins-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
 }
 
 .text-brand-primary {
-	color: var(--brand-primary);
+  color: var(--brand-primary);
 }
 
 .text-brand-primary-text {
-	color: var(--brand-primary-text);
+  color: var(--brand-primary-text);
 }
 
 .bg-brand-primary {
-	background-color: var(--brand-primary);
+  background-color: var(--brand-primary);
 }
 
 .bg-brand-primary-soft {
-	background-color: var(--brand-primary-soft);
+  background-color: var(--brand-primary-soft);
 }
 
 html {
-	font-size: 16px;
+  font-size: 16px;
 }
 body {
   font-family: "Poppins", sans-serif;
 }
 
 @media (min-width: 768px) {
-	html {
-		font-size: 16px;
-	}
+  html {
+    font-size: 16px;
+  }
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
 
+.animate-marquee {
+  animation: marquee 12s linear infinite;
+}
 
-
-
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
