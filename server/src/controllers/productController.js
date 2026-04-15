@@ -56,6 +56,27 @@ class ProductController {
     }
   }
 
+  // Get related products (same category, excluding current)
+  async getRelatedProducts(req, res) {
+    try {
+      const productId = req.params.id;
+      const limit = Number(req.query.limit) || 4;
+
+      const related = await productService.getRelatedProducts(productId, limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Related products retrieved successfully",
+        data: related,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Failed to retrieve related products",
+      });
+    }
+  }
+
   // Create new product (Admin only)
   async createProduct(req, res) {
     try {

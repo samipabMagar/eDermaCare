@@ -50,6 +50,18 @@ export const productService = {
     }
   },
 
+  // Fetch related products (same category)  →  GET /api/products/:id/related
+  async getRelatedProducts(id, limit = 4) {
+    try {
+      const response = await api.get(`/products/${id}/related`, {
+        params: { limit },
+      });
+      return response.data?.data ?? [];
+    } catch {
+      return [];
+    }
+  },
+
   async getBrands() {
     try {
       const response = await api.get("/brands");

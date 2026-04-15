@@ -8,6 +8,7 @@ import { PRODUCT_ROUTE } from "@/constants/routes";
 import ProductImageGallery from "@/components/products/detail/ProductImageGallery";
 import ProductInfoPanel from "@/components/products/detail/ProductInfoPanel";
 import ProductTabs from "@/components/products/detail/ProductTabs";
+import RelatedProducts from "@/components/products/detail/RelatedProducts";
 
 const LoadingSkeleton = () => (
   <div className="mx-auto max-w-5xl animate-pulse px-6 py-10">
@@ -93,6 +94,8 @@ const ProductDetail = ({ id }) => {
       </div>
 
       <ProductTabs product={product} />
+
+      <RelatedProducts productId={product.product_id} />
     </main>
   );
 };

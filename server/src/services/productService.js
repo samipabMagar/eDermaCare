@@ -158,6 +158,33 @@ class ProductService {
     return updatedProduct;
   }
 
+  async getRelatedProducts(productId, limit = 4) {
+    const current = await productModel.findByPk(productId, {
+      attributes: ["product_id", "category"],
+    });
+
+    if (!current) throw new Error("Product not found");
+
+    const related = await productModel.findAll({
+      where: {
+        category: current.category,
+        product_id: { [Op.ne]: current.product_id },
+        is_active: true,
+      },
+      include: [
+        {
+          model: brandModel,
+          as: "brand",
+          attributes: ["brand_id", "name", "logo_url"],
+        },
+      ],
+      order: [["rating", "DESC"]],
+      limit,
+    });
+
+    return related;
+  }
+
   async deleteProduct(productId) {
     const product = await productModel.findByPk(productId);
 
