@@ -1,30 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Minus, Plus, ShoppingCart, Zap, Star } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 import { formatCategory } from "@/utils/products/productCardHelpers";
 import useAddToCart from "@/hooks/useAddToCart";
-
-const StarRating = ({ rating }) => {
-  const value = Math.min(5, Math.max(0, Number(rating) || 0));
-  return (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={`h-4 w-4 ${
-            i < Math.round(value)
-              ? "fill-[#E7C873] text-[#E7C873]"
-              : "fill-slate-200 text-slate-200"
-          }`}
-        />
-      ))}
-      <span className="ml-1.5 text-sm font-medium text-slate-500">
-        {value.toFixed(1)}
-      </span>
-    </div>
-  );
-};
 
 const StockBadge = ({ qty }) => {
   if (qty <= 0)
@@ -62,6 +41,10 @@ const ProductInfoPanel = ({ product }) => {
   };
 
   const skinTypes = Array.isArray(product.skin_type) ? product.skin_type : [];
+  const skinConcerns = Array.isArray(product.skin_concern) ? product.skin_concern : [];
+
+  const formatLabel = (val) =>
+    val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <div className="flex flex-col gap-5">
@@ -81,7 +64,6 @@ const ProductInfoPanel = ({ product }) => {
       </h1>
 
       <div className="flex flex-wrap items-center gap-3">
-        <StarRating rating={product.rating ?? 0} />
         <StockBadge qty={product.stock_quantity ?? 0} />
       </div>
 
@@ -96,7 +78,54 @@ const ProductInfoPanel = ({ product }) => {
         </p>
       </div>
 
-      {skinTypes.length > 0 && (
+      {/* Skin Type & Targets block */}
+      {(skinTypes.length > 0 || skinConcerns.length > 0) && (
+        <>
+          <div className="h-px bg-slate-100" />
+
+          <div className="flex flex-col gap-4">
+            {/* Skin Type row */}
+            {skinTypes.length > 0 && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Skin Type
+                  </p>
+                  <p className="text-sm font-semibold capitalize text-slate-800">
+                    {skinTypes.length === 5
+                      ? "All Skin Types"
+                      : skinTypes.map(formatLabel).join(", ")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Targets / Skin Concerns */}
+            {skinConcerns.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Targets
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {skinConcerns.map((concern) => (
+                    <span
+                      key={concern}
+                      className="rounded-full border border-[#2FA4A9]/40 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                    >
+                      {formatLabel(concern)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="h-px bg-slate-100" />
+        </>
+      )}
+
+      {/* legacy skin_type badges (only shown if no concerns block) */}
+      {skinTypes.length > 0 && skinConcerns.length === 0 && (
         <div className="flex flex-wrap gap-2">
           {skinTypes.map((type) => (
             <span

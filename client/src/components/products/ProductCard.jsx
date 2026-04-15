@@ -1,34 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, ShoppingCart, Star, Package } from "lucide-react";
+import { Eye, ShoppingCart, Package } from "lucide-react";
 import {
   formatCategory,
   getFirstImagePath,
   resolveImageUrl,
 } from "@/utils/products/productCardHelpers";
 import useAddToCart from "@/hooks/useAddToCart";
-
-const StarRating = ({ rating }) => {
-  const clamped = Math.min(5, Math.max(0, Number(rating) || 0));
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={`h-3.5 w-3.5 ${
-            i < Math.round(clamped)
-              ? "fill-[#E7C873] text-[#E7C873]"
-              : "fill-slate-200 text-slate-200"
-          }`}
-        />
-      ))}
-      <span className="ml-1 text-xs font-medium text-slate-500">
-        {clamped.toFixed(1)}
-      </span>
-    </div>
-  );
-};
 
 const StockBadge = ({ qty }) => {
   if (qty <= 0)
@@ -103,7 +82,6 @@ const ProductCard = ({ product }) => {
           <p className="text-xl font-extrabold text-[#1D7D82]">
             Rs {Number(product.price).toFixed(0)}
           </p>
-          <StarRating rating={product.rating ?? 0} />
         </div>
 
         <div className="mt-auto flex gap-2">

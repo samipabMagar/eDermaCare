@@ -76,6 +76,13 @@ const productModel = connection.define(
       // Expected array: ["normal", "oily", "dry", "combination", "sensitive"]
     },
 
+    skin_concern: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      // Expected array: ["dark_spots", "dull_skin", "uneven_tone", "fine_lines", "acne", "redness", "dryness", "pores"]
+    },
+
     ingredients: {
       type: DataTypes.TEXT,
       allowNull: true,

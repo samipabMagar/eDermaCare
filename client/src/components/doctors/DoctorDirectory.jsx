@@ -23,15 +23,13 @@ const DoctorDirectory = () => {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpec, setSelectedSpec] = useState("All");
-  const [sortBy, setSortBy] = useState("Rating");
+  const [sortBy, setSortBy] = useState("Experience");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const sortByQuery = useMemo(() => {
-    if (sortBy === "Experience") return "experience";
-    if (sortBy === "Reviews") return "reviews";
-    return "rating";
+    return "experience";
   }, [sortBy]);
 
   useEffect(() => {
@@ -67,19 +65,6 @@ const DoctorDirectory = () => {
 
   const availableCount = useMemo(() => {
     return doctors.filter((doctor) => doctor.is_available).length;
-  }, [doctors]);
-
-  const averageRating = useMemo(() => {
-    if (!doctors.length) {
-      return "0.0";
-    }
-
-    const totalRating = doctors.reduce(
-      (sum, doctor) => sum + Number(doctor.rating || 0),
-      0,
-    );
-
-    return (totalRating / doctors.length).toFixed(1);
   }, [doctors]);
 
   const specializationOptions = useMemo(() => {
@@ -142,7 +127,6 @@ const DoctorDirectory = () => {
           <DoctorDirectoryHeader
             totalDoctors={doctors.length}
             availableCount={availableCount}
-            averageRating={averageRating}
           />
         </div>
 
@@ -172,12 +156,7 @@ const DoctorDirectory = () => {
 
                   {showSortMenu ? (
                     <div className="absolute right-0 top-10 z-50 min-w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-sm">
-                      {[
-                        "Rating",
-                        "Experience",
-                        "Reviews",
-                        "Fee: Low to High",
-                      ].map((option) => (
+                      {["Experience"].map((option) => (
                         <button
                           key={option}
                           type="button"

@@ -51,11 +51,30 @@ export const createProductSchema = z.object({
     .nullable(),
 
   skin_type: z
-    .array(
+    .preprocess((val) => {
+      if (typeof val === "string") {
+        try { return JSON.parse(val); } catch { return val; }
+      }
+      return val;
+    }, z.array(
       z.enum(["normal", "oily", "dry", "combination", "sensitive"], {
         invalid_type_error: "Invalid skin type",
       }),
-    )
+    ).optional())
+    .optional(),
+
+  skin_concern: z
+    .preprocess((val) => {
+      if (typeof val === "string") {
+        try { return JSON.parse(val); } catch { return val; }
+      }
+      return val;
+    }, z.array(
+      z.enum(
+        ["dark_spots", "dull_skin", "uneven_tone", "fine_lines", "acne", "redness", "dryness", "pores"],
+        { invalid_type_error: "Invalid skin concern" },
+      ),
+    ).optional())
     .optional(),
 
   ingredients: z.string().trim().optional(),
@@ -114,9 +133,28 @@ export const updateProductSchema = z.object({
   .nullable(),
 
   skin_type: z
-  .array(
+  .preprocess((val) => {
+    if (typeof val === "string") {
+      try { return JSON.parse(val); } catch { return val; }
+    }
+    return val;
+  }, z.array(
     z.enum(["normal", "oily", "dry", "combination", "sensitive"], {invalid_type_error: "Invalid skin type"})
-  )
+  ).optional())
+  .optional(),
+
+  skin_concern: z
+  .preprocess((val) => {
+    if (typeof val === "string") {
+      try { return JSON.parse(val); } catch { return val; }
+    }
+    return val;
+  }, z.array(
+    z.enum(
+      ["dark_spots", "dull_skin", "uneven_tone", "fine_lines", "acne", "redness", "dryness", "pores"],
+      { invalid_type_error: "Invalid skin concern" },
+    ),
+  ).optional())
   .optional(),
 
   ingredients: z.string().trim().optional(),

@@ -21,6 +21,25 @@ const CATEGORY_OPTIONS = [
   "lip_care",
 ];
 
+const SKIN_TYPE_OPTIONS = [
+  { value: "normal", label: "Normal" },
+  { value: "oily", label: "Oily" },
+  { value: "dry", label: "Dry" },
+  { value: "combination", label: "Combination" },
+  { value: "sensitive", label: "Sensitive" },
+];
+
+const SKIN_CONCERN_OPTIONS = [
+  { value: "dark_spots", label: "Dark Spots" },
+  { value: "dull_skin", label: "Dull Skin" },
+  { value: "uneven_tone", label: "Uneven Tone" },
+  { value: "fine_lines", label: "Fine Lines" },
+  { value: "acne", label: "Acne" },
+  { value: "redness", label: "Redness" },
+  { value: "dryness", label: "Dryness" },
+  { value: "pores", label: "Pores" },
+];
+
 const formatCategoryLabel = (value) =>
   value
     .split("_")
@@ -31,6 +50,12 @@ const ProductForm = ({ product }) => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState([]);
+  const [skinTypes, setSkinTypes] = useState(
+    Array.isArray(product?.skin_type) ? product.skin_type : []
+  );
+  const [skinConcerns, setSkinConcerns] = useState(
+    Array.isArray(product?.skin_concern) ? product.skin_concern : []
+  );
   const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -85,6 +110,8 @@ const ProductForm = ({ product }) => {
     formData.append("category", data.category);
     formData.append("stock_quantity", data.stock_quantity || 0);
     if (data.description) formData.append("description", data.description);
+    if (skinTypes.length > 0) formData.append("skin_type", JSON.stringify(skinTypes));
+    if (skinConcerns.length > 0) formData.append("skin_concern", JSON.stringify(skinConcerns));
 
     if (selectedImages.length > 0) {
       selectedImages.forEach((image) => {
@@ -186,6 +213,95 @@ const ProductForm = ({ product }) => {
             placeholder="10"
             {...register("stock_quantity")}
           />
+        </div>
+
+        {/* Skin Type */}
+        <div className="sm:col-span-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Skin Type
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {/* All Skin Types shortcut */}
+            <label
+              className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                skinTypes.length === SKIN_TYPE_OPTIONS.length
+                  ? "border-[#2FA4A9] bg-[#2FA4A9] text-white"
+                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-[#2FA4A9]/50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={skinTypes.length === SKIN_TYPE_OPTIONS.length}
+                onChange={(e) =>
+                  setSkinTypes(
+                    e.target.checked
+                      ? SKIN_TYPE_OPTIONS.map((o) => o.value)
+                      : []
+                  )
+                }
+              />
+              All Skin Types
+            </label>
+
+            {SKIN_TYPE_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  skinTypes.includes(opt.value)
+                    ? "border-[#2FA4A9] bg-[#E8F7F8] text-[#1D7D82]"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:border-[#2FA4A9]/50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={skinTypes.includes(opt.value)}
+                  onChange={(e) =>
+                    setSkinTypes((prev) =>
+                      e.target.checked
+                        ? [...prev, opt.value]
+                        : prev.filter((v) => v !== opt.value)
+                    )
+                  }
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Skin Concerns / Targets */}
+        <div className="sm:col-span-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Targets (Skin Concerns)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {SKIN_CONCERN_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  skinConcerns.includes(opt.value)
+                    ? "border-[#2FA4A9] bg-[#E8F7F8] text-[#1D7D82]"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:border-[#2FA4A9]/50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={skinConcerns.includes(opt.value)}
+                  onChange={(e) =>
+                    setSkinConcerns((prev) =>
+                      e.target.checked
+                        ? [...prev, opt.value]
+                        : prev.filter((v) => v !== opt.value)
+                    )
+                  }
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
         </div>
 
         <div className="sm:col-span-2">

@@ -1,11 +1,7 @@
 import Image from "next/image";
 import { Award, Users } from "lucide-react";
 
-const DoctorDirectoryHeader = ({
-  totalDoctors,
-  availableCount,
-  averageRating,
-}) => {
+const DoctorDirectoryHeader = ({ totalDoctors, availableCount }) => {
   return (
     <section className="space-y-4">
       <div className="relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
@@ -36,8 +32,6 @@ const DoctorDirectoryHeader = ({
           </div>
         </div>
       </div>
-
-      
 
       <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1.5">

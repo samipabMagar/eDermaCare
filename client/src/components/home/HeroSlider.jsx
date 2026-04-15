@@ -97,12 +97,10 @@ const SlideContent = ({ slide }) => (
             <span className="text-[#F5E6B3]">{slide.highlight}</span>
           </h2>
 
-   
           <p className="mt-4 max-w-md text-base leading-7 text-white/80">
             {slide.subtitle}
           </p>
 
-      
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href={slide.primaryCta.href}
@@ -139,7 +137,7 @@ const HeroSlider = () => (
   <section>
     <Swiper
       modules={[Autoplay, Pagination, Navigation, EffectFade]}
-      effect="fade" 
+      effect="fade"
       autoplay={{ delay: 5000, disableOnInteraction: false }}
       pagination={{ clickable: true }}
       navigation={true}
@@ -153,7 +151,6 @@ const HeroSlider = () => (
       ))}
     </Swiper>
 
-   
     <div className="border-b border-slate-100 bg-white">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-around gap-6 px-6 py-5">
         <StatItem value="500+" label="Verified Doctors" />
@@ -161,12 +158,9 @@ const HeroSlider = () => (
         <StatItem value="10,000+" label="Happy Patients" />
         <div className="hidden w-px self-stretch bg-slate-200 sm:block" />
         <StatItem value="5,000+" label="Skincare Products" />
-        <div className="hidden w-px self-stretch bg-slate-200 sm:block" />
-        <StatItem value="4.9★" label="Average Rating" />
       </div>
     </div>
 
-  
     <style>{`
       .hero-swiper .swiper-button-next,
       .hero-swiper .swiper-button-prev {

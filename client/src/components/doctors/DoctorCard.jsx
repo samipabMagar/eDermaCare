@@ -6,7 +6,6 @@ import {
   Clock,
   Mail,
   Phone,
-  Star,
   Users,
 } from "lucide-react";
 
@@ -81,14 +80,9 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
   const doctorName = doctor.user?.full_name || "Doctor";
   const doctorId = doctor.user?.user_id;
   const tagList = getTags(doctor.specialization);
-  const isTopRated = Number(doctor.rating || 0) >= 4.8;
   const educationLabel = formatEducationLabel(doctor.education);
 
-  const badgeText = isTopRated
-    ? "Top Rated"
-    : doctor.is_available
-      ? "Available"
-      : null;
+  const badgeText = doctor.is_available ? "Available" : null;
 
   return (
     <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
@@ -133,22 +127,13 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
         </p>
 
         <div className="mt-4 flex items-center gap-4 border-y border-slate-200 py-3">
-          <div className="flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 text-amber-500" fill="currentColor" />
-            <span className="text-xs font-bold text-slate-800">
-              {Number(doctor.rating || 0).toFixed(1)}
-            </span>
-            <span className="text-[10px] text-slate-500">
-              ({doctor.total_reviews || 0})
-            </span>
-          </div>
           <div className="flex items-center gap-1 text-xs text-slate-700">
             <BriefcaseBusiness className="h-3.5 w-3.5 text-teal-700" />
             {doctor.years_of_experience ?? 0} yrs
           </div>
           <div className="flex items-center gap-1 text-xs text-slate-700">
             <Users className="h-3.5 w-3.5 text-teal-700" />
-            {doctor.total_reviews || 0}+ reviews
+            Serving dermatology patients
           </div>
         </div>
 

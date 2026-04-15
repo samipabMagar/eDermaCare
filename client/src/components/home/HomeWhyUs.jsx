@@ -1,12 +1,12 @@
 import Image from "next/image";
-import { ShieldCheck, Zap, Sparkles, Star } from "lucide-react";
+import { ShieldCheck, Zap, Sparkles } from "lucide-react";
 
 const TRUST_POINTS = [
   {
     icon: ShieldCheck,
     title: "Verified Doctors",
     description:
-      "Every doctor is reviewed and verified, giving you peace of mind that your guidance comes from trusted professionals.",
+      "Every doctor is screened and verified, giving you peace of mind that your guidance comes from trusted professionals.",
     iconColor: "text-emerald-600",
     iconBg: "bg-emerald-50",
   },
@@ -79,17 +79,6 @@ const HomeWhyUs = () => (
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#0D4F52]/60 via-transparent to-transparent" />
         </div>
-
-        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <span className="text-xl flex items-center gap-1 font-extrabold text-[#1D7D82]">4.9<Star className="h-3 w-3"/></span>
-          <div>
-            <p className="text-[11px] font-bold text-slate-800">
-              Patient Rating
-            </p>
-            <p className="text-[10px] text-slate-400">10,000+ reviews</p>
-          </div>
-        </div>
-
         <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
           <span className="text-xl font-extrabold text-[#1D7D82]">500+</span>
           <div>
