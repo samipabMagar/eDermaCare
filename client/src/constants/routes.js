@@ -6,6 +6,7 @@ export const TREATMENTS_ROUTE = "/treatments";
 export const CART_ROUTE = "/cart";
 export const DOCTORS_ROUTE = "/doctors";
 export const ABOUT_ROUTE = "/about";
+export const CONTACT_ROUTE = "/contact";
 export const USER_DASHBOARD_ROUTE = "/dashboard";
 export const USER_DASHBOARD_ORDERS_ROUTE = "/dashboard/orders";
 export const USER_DASHBOARD_APPOINTMENTS_ROUTE = "/dashboard/appointments";
@@ -41,6 +42,8 @@ export const ROUTES = {
   TREATMENTS: TREATMENTS_ROUTE,
   CART: CART_ROUTE,
   DOCTORS: DOCTORS_ROUTE,
+  ABOUT: ABOUT_ROUTE,
+  CONTACT: CONTACT_ROUTE,
   USER_DASHBOARD: USER_DASHBOARD_ROUTE,
   USER_DASHBOARD_ORDERS: USER_DASHBOARD_ORDERS_ROUTE,
   USER_DASHBOARD_APPOINTMENTS: USER_DASHBOARD_APPOINTMENTS_ROUTE,

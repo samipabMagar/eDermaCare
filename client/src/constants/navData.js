@@ -4,6 +4,7 @@ import {
   DOCTORS_ROUTE,
   TREATMENTS_ROUTE,
   ABOUT_ROUTE,
+  CONTACT_ROUTE,
 } from "@/constants/routes";
 
 export const navLinks = [
@@ -12,4 +13,6 @@ export const navLinks = [
   { href: TREATMENTS_ROUTE, label: "Treatments" },
   { href: PRODUCT_ROUTE, label: "Products" },
   { href: ABOUT_ROUTE, label: "About Us" },
+  { href: CONTACT_ROUTE, label: "Contact" },
 ];
+

@@ -54,7 +54,7 @@ const AppFooter = () => {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 text-slate-400 transition-all duration-200 hover:border-[#2FA4A9] hover:bg-[#2FA4A9]/15 hover:text-[#2FA4A9]"
+                  className="flex h-9 w-9 p-2 items-center justify-center rounded-full border border-slate-700 text-slate-400 transition-all duration-200 hover:border-[#2FA4A9] hover:bg-[#2FA4A9]/15 hover:text-[#2FA4A9]"
                 >
                   <Icon />
                 </a>
