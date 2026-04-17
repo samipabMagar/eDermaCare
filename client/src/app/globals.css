@@ -50,7 +50,7 @@ body {
 
 @keyframes marquee {
   from {
-    transform: translateX(100%);
+    transform: translateX(50%);
   }
   to {
     transform: translateX(-100%);
@@ -58,7 +58,7 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 12s linear infinite;
+  animation: marquee 18s linear infinite;
 }
 
 .animate-marquee:hover {

@@ -86,7 +86,7 @@ connection
   .authenticate()
   .then(() => {
     console.log("Database connection has been established successfully.");
-    return connection.sync({alter:true});
+    return connection.sync();
   })
   .then(() => {
     console.log("Database synced successfully.");
