@@ -1,27 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Send, CheckCircle2 } from "lucide-react";
+import { contactService } from "@/services/contactService";
 
 export default function ContactForm() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
   const [submitted, setSubmitted] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [submittedData, setSubmittedData] = useState(null);
+  const [serverError, setServerError] = useState("");
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    },
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSending(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setSending(false);
-    setSubmitted(true);
+  const onSubmit = async (data) => {
+    setServerError("");
+
+    try {
+      await contactService.submitContactMessage(data);
+      setSubmittedData(data);
+      setSubmitted(true);
+      reset();
+    } catch (error) {
+      setServerError(error.message || "Failed to send your message.");
+    }
   };
 
   const inputClass =
@@ -50,13 +63,14 @@ export default function ContactForm() {
           </h3>
           <p className="text-sm text-slate-600">
             Thank you for reaching out,{" "}
-            <strong>{form.name.split(" ")[0]}</strong>. We&apos;ll reply to{" "}
-            <strong>{form.email}</strong> within 24 hours.
+            <strong>{submittedData?.name?.split(" ")[0]}</strong>. We&apos;ll
+            reply to <strong>{submittedData?.email}</strong> within 24 hours.
           </p>
           <button
             onClick={() => {
               setSubmitted(false);
-              setForm({ name: "", email: "", subject: "", message: "" });
+              setSubmittedData(null);
+              setServerError("");
             }}
             className="mt-2 rounded-xl border border-[#2FA4A9]/40 px-5 py-2 text-sm font-semibold text-[#2FA4A9] transition hover:bg-[#2FA4A9] hover:text-white"
           >
@@ -64,7 +78,11 @@ export default function ContactForm() {
           </button>
         </div>
       ) : (
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+        <form
+          className="mt-8 space-y-5"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
@@ -72,14 +90,22 @@ export default function ContactForm() {
               </label>
               <input
                 id="contact-name"
-                name="name"
                 type="text"
-                required
-                value={form.name}
-                onChange={handleChange}
                 placeholder="Jane Doe"
-                className={inputClass}
+                {...register("name", {
+                  required: "Full name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Name must be at least 2 characters",
+                  },
+                })}
+                className={`${inputClass} ${errors.name ? "border-rose-300 focus:border-rose-500 focus:ring-rose-200" : ""}`}
               />
+              {errors.name && (
+                <p className="mt-1.5 text-xs font-medium text-rose-500">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-600">
@@ -87,14 +113,22 @@ export default function ContactForm() {
               </label>
               <input
                 id="contact-email"
-                name="email"
                 type="email"
-                required
-                value={form.email}
-                onChange={handleChange}
                 placeholder="jane@example.com"
-                className={inputClass}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please provide a valid email address",
+                  },
+                })}
+                className={`${inputClass} ${errors.email ? "border-rose-300 focus:border-rose-500 focus:ring-rose-200" : ""}`}
               />
+              {errors.email && (
+                <p className="mt-1.5 text-xs font-medium text-rose-500">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -104,20 +138,28 @@ export default function ContactForm() {
             </label>
             <select
               id="contact-subject"
-              name="subject"
-              required
-              value={form.subject}
-              onChange={handleChange}
-              className={inputClass}
+              {...register("subject", {
+                required: "Please choose a subject",
+              })}
+              className={`${inputClass} ${errors.subject ? "border-rose-300 focus:border-rose-500 focus:ring-rose-200" : ""}`}
             >
               <option value="">Select a subject…</option>
-              <option>Appointment / Consultation</option>
-              <option>Product Order &amp; Delivery</option>
-              <option>Technical Support</option>
-              <option>Billing &amp; Payments</option>
-              <option>Partnership Enquiry</option>
-              <option>Other</option>
+              <option value="Appointment / Consultation">
+                Appointment / Consultation
+              </option>
+              <option value="Product Order & Delivery">
+                Product Order &amp; Delivery
+              </option>
+              <option value="Technical Support">Technical Support</option>
+              <option value="Billing & Payments">Billing &amp; Payments</option>
+              <option value="Partnership Enquiry">Partnership Enquiry</option>
+              <option value="Other">Other</option>
             </select>
+            {errors.subject && (
+              <p className="mt-1.5 text-xs font-medium text-rose-500">
+                {errors.subject.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -126,26 +168,58 @@ export default function ContactForm() {
             </label>
             <textarea
               id="contact-message"
-              name="message"
-              required
               rows={5}
-              value={form.message}
-              onChange={handleChange}
               placeholder="Tell us how we can help you…"
-              className={`${inputClass} resize-none`}
+              {...register("message", {
+                required: "Message is required",
+                minLength: {
+                  value: 10,
+                  message: "Message must be at least 10 characters",
+                },
+              })}
+              className={`${inputClass} resize-none ${errors.message ? "border-rose-300 focus:border-rose-500 focus:ring-rose-200" : ""}`}
             />
+            {errors.message && (
+              <p className="mt-1.5 text-xs font-medium text-rose-500">
+                {errors.message.message}
+              </p>
+            )}
           </div>
+
+          {serverError && (
+            <p
+              role="alert"
+              className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+            >
+              {serverError}
+            </p>
+          )}
 
           <button
             type="submit"
-            disabled={sending}
+            disabled={isSubmitting}
             className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#2FA4A9] py-3.5 text-sm font-bold text-white shadow-md shadow-[#2FA4A9]/25 transition hover:bg-[#25888d] hover:shadow-lg hover:shadow-[#2FA4A9]/30 active:scale-95 disabled:opacity-70"
           >
-            {sending ? (
+            {isSubmitting ? (
               <>
-                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
                 </svg>
                 Sending…
               </>
