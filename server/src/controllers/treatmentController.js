@@ -58,6 +58,24 @@ class TreatmentController {
     }
   }
 
+  async getTreatment(req, res) {
+    try {
+      const treatmentId = req.params.treatmentId;
+      const treatment = await treatmentService.getTreatmentById(treatmentId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Treatment retrieved successfully",
+        data: treatment,
+      });
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message || "Treatment not found",
+      });
+    }
+  }
+
   async createTreatment(req, res) {
     try {
       const treatmentData = { ...req.body };

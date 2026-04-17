@@ -80,4 +80,6 @@ router.patch(
   treatmentController.reviewTreatmentAppointment,
 );
 
+router.get("/:treatmentId", treatmentController.getTreatment);
+
 export default router;

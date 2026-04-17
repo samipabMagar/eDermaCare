@@ -273,7 +273,7 @@ const TreatmentCatalog = () => {
                   key={treatment.treatment_id}
                   className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  <Link href={`/treatments/${treatment.treatment_id}`} className="block relative h-48 overflow-hidden">
                     {treatment.image ? (
                       <img
                         src={treatment.image}
@@ -290,14 +290,16 @@ const TreatmentCatalog = () => {
                       <Clock className="h-3.5 w-3.5" />
                       <span>{treatment.duration}</span>
                     </div>
-                  </div>
+                  </Link>
 
                   <div className="p-6">
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#0F9EA5]">
-                          {treatment.name}
-                        </h3>
+                        <Link href={`/treatments/${treatment.treatment_id}`}>
+                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#0F9EA5]">
+                            {treatment.name}
+                          </h3>
+                        </Link>
                       </div>
                       <div className="text-right">
                         <span className="text-[11px] text-slate-500">from</span>

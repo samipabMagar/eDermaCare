@@ -124,6 +124,21 @@ class TreatmentService {
     };
   }
 
+  async getTreatmentById(treatmentId) {
+    const treatment = await treatmentModel.findOne({
+      where: { 
+        treatment_id: treatmentId,
+        is_active: true 
+      }
+    });
+
+    if (!treatment) {
+      throw new Error("Treatment not found");
+    }
+
+    return treatment;
+  }
+
   async createTreatment(payload) {
     const slug = toSlug(payload.name);
 

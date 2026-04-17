@@ -29,6 +29,15 @@ export const treatmentService = {
     }
   },
 
+  async getTreatmentById(treatmentId) {
+    try {
+      const response = await api.get(`/treatments/${treatmentId}`);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to load treatment details"));
+    }
+  },
+
   async createTreatmentBooking(payload) {
     try {
       const response = await api.post("/treatments/bookings", payload);
