@@ -3,13 +3,18 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/validators/authSchemas";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import AuthLayout from "@/components/auth/AuthLayout";
 import LoginErrorAlert from "@/components/auth/LoginErrorAlert";
 import LoginForm from "@/components/auth/LoginForm";
 import LoginFooter from "@/components/auth/LoginFooter";
-import { HOME_ROUTE } from "@/constants/routes";
+import {
+  ADMIN_DASHBOARD_ROUTE,
+  DOCTOR_DASHBOARD_ROUTE,
+  HOME_ROUTE,
+  USER_DASHBOARD_ROUTE,
+} from "@/constants/routes";
 import { cartService } from "@/services/cartService";
 import { setCartItems } from "@/store/slices/cartSlice";
 import { loginUser } from "@/store/thunks/authThunks";
@@ -17,7 +22,6 @@ import { loginUser } from "@/store/thunks/authThunks";
 const LoginPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { isLoading, error } = useSelector((state) => state.auth);
   const guestCartItems = useSelector((state) => state.cart?.items ?? []);
 
@@ -56,13 +60,16 @@ const LoginPage = () => {
         // Continue login redirect even if cart merge fails.
       }
 
-      const requestedNextPath = searchParams.get("next");
-      const safeRedirectPath =
-        requestedNextPath && requestedNextPath.startsWith("/")
-          ? requestedNextPath
-          : HOME_ROUTE;
+      const loggedInUser = resultAction.payload?.data ?? resultAction.payload;
+      const role = String(loggedInUser?.role || "").toLowerCase();
 
-      router.push(safeRedirectPath);
+      const roleRedirectMap = {
+        admin: ADMIN_DASHBOARD_ROUTE,
+        doctor: DOCTOR_DASHBOARD_ROUTE,
+        user: USER_DASHBOARD_ROUTE,
+      };
+
+      router.push(roleRedirectMap[role] || HOME_ROUTE);
     }
   };
 
