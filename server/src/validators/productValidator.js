@@ -51,30 +51,57 @@ export const createProductSchema = z.object({
     .nullable(),
 
   skin_type: z
-    .preprocess((val) => {
-      if (typeof val === "string") {
-        try { return JSON.parse(val); } catch { return val; }
-      }
-      return val;
-    }, z.array(
-      z.enum(["normal", "oily", "dry", "combination", "sensitive"], {
-        invalid_type_error: "Invalid skin type",
-      }),
-    ).optional())
+    .preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val;
+          }
+        }
+        return val;
+      },
+      z
+        .array(
+          z.enum(["normal", "oily", "dry", "combination", "sensitive"], {
+            invalid_type_error: "Invalid skin type",
+          }),
+        )
+        .optional(),
+    )
     .optional(),
 
   skin_concern: z
-    .preprocess((val) => {
-      if (typeof val === "string") {
-        try { return JSON.parse(val); } catch { return val; }
-      }
-      return val;
-    }, z.array(
-      z.enum(
-        ["dark_spots", "dull_skin", "uneven_tone", "fine_lines", "acne", "redness", "dryness", "pores"],
-        { invalid_type_error: "Invalid skin concern" },
-      ),
-    ).optional())
+    .preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val;
+          }
+        }
+        return val;
+      },
+      z
+        .array(
+          z.enum(
+            [
+              "dark_spots",
+              "dull_skin",
+              "uneven_tone",
+              "fine_lines",
+              "acne",
+              "redness",
+              "dryness",
+              "pores",
+            ],
+            { invalid_type_error: "Invalid skin concern" },
+          ),
+        )
+        .optional(),
+    )
     .optional(),
 
   ingredients: z.string().trim().optional(),
@@ -125,45 +152,87 @@ export const updateProductSchema = z.object({
 
   images: z.array(z.string()).optional(),
 
+  retained_images: z
+    .preprocess((val) => {
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return val;
+        }
+      }
+      return val;
+    }, z.array(z.string()).optional())
+    .optional(),
+
   brand_id: z.coerce
-  .number()
-  .int()
-  .positive("Brand ID must be a positive integer")
-  .optional()
-  .nullable(),
+    .number()
+    .int()
+    .positive("Brand ID must be a positive integer")
+    .optional()
+    .nullable(),
 
   skin_type: z
-  .preprocess((val) => {
-    if (typeof val === "string") {
-      try { return JSON.parse(val); } catch { return val; }
-    }
-    return val;
-  }, z.array(
-    z.enum(["normal", "oily", "dry", "combination", "sensitive"], {invalid_type_error: "Invalid skin type"})
-  ).optional())
-  .optional(),
+    .preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val;
+          }
+        }
+        return val;
+      },
+      z
+        .array(
+          z.enum(["normal", "oily", "dry", "combination", "sensitive"], {
+            invalid_type_error: "Invalid skin type",
+          }),
+        )
+        .optional(),
+    )
+    .optional(),
 
   skin_concern: z
-  .preprocess((val) => {
-    if (typeof val === "string") {
-      try { return JSON.parse(val); } catch { return val; }
-    }
-    return val;
-  }, z.array(
-    z.enum(
-      ["dark_spots", "dull_skin", "uneven_tone", "fine_lines", "acne", "redness", "dryness", "pores"],
-      { invalid_type_error: "Invalid skin concern" },
-    ),
-  ).optional())
-  .optional(),
+    .preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val;
+          }
+        }
+        return val;
+      },
+      z
+        .array(
+          z.enum(
+            [
+              "dark_spots",
+              "dull_skin",
+              "uneven_tone",
+              "fine_lines",
+              "acne",
+              "redness",
+              "dryness",
+              "pores",
+            ],
+            { invalid_type_error: "Invalid skin concern" },
+          ),
+        )
+        .optional(),
+    )
+    .optional(),
 
   ingredients: z.string().trim().optional(),
 
   is_active: z.boolean().optional(),
 
   rating: z.coerce
-  .number()
-  .min(0, "Rating must be at least 0")
-  .max(5, "Rating must be at most 5")
-  .optional(),
+    .number()
+    .min(0, "Rating must be at least 0")
+    .max(5, "Rating must be at most 5")
+    .optional(),
 });

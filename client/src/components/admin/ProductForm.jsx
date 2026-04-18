@@ -9,6 +9,7 @@ import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
+import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
 const CATEGORY_OPTIONS = [
   "cleanser",
@@ -48,13 +49,27 @@ const formatCategoryLabel = (value) =>
 
 const ProductForm = ({ product }) => {
   const [selectedImages, setSelectedImages] = useState([]);
+  const [existingImages, setExistingImages] = useState(() => {
+    if (Array.isArray(product?.images)) return product.images;
+
+    if (typeof product?.images === "string") {
+      try {
+        const parsed = JSON.parse(product.images);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState([]);
   const [skinTypes, setSkinTypes] = useState(
-    Array.isArray(product?.skin_type) ? product.skin_type : []
+    Array.isArray(product?.skin_type) ? product.skin_type : [],
   );
   const [skinConcerns, setSkinConcerns] = useState(
-    Array.isArray(product?.skin_concern) ? product.skin_concern : []
+    Array.isArray(product?.skin_concern) ? product.skin_concern : [],
   );
   const router = useRouter();
 
@@ -101,6 +116,10 @@ const ProductForm = ({ product }) => {
     setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
+  const removeExistingImage = (index) => {
+    setExistingImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
   const submitForm = async (data) => {
     const formData = new FormData();
     formData.append("name", data.name);
@@ -112,13 +131,19 @@ const ProductForm = ({ product }) => {
     formData.append("stock_quantity", data.stock_quantity || 0);
     if (data.description) formData.append("description", data.description);
     if (data.ingredients) formData.append("ingredients", data.ingredients);
-    if (skinTypes.length > 0) formData.append("skin_type", JSON.stringify(skinTypes));
-    if (skinConcerns.length > 0) formData.append("skin_concern", JSON.stringify(skinConcerns));
+    if (skinTypes.length > 0)
+      formData.append("skin_type", JSON.stringify(skinTypes));
+    if (skinConcerns.length > 0)
+      formData.append("skin_concern", JSON.stringify(skinConcerns));
 
     if (selectedImages.length > 0) {
       selectedImages.forEach((image) => {
         formData.append("images", image);
       });
+    }
+
+    if (product) {
+      formData.append("retained_images", JSON.stringify(existingImages));
     }
 
     try {
@@ -239,7 +264,7 @@ const ProductForm = ({ product }) => {
                   setSkinTypes(
                     e.target.checked
                       ? SKIN_TYPE_OPTIONS.map((o) => o.value)
-                      : []
+                      : [],
                   )
                 }
               />
@@ -263,7 +288,7 @@ const ProductForm = ({ product }) => {
                     setSkinTypes((prev) =>
                       e.target.checked
                         ? [...prev, opt.value]
-                        : prev.filter((v) => v !== opt.value)
+                        : prev.filter((v) => v !== opt.value),
                     )
                   }
                 />
@@ -296,7 +321,7 @@ const ProductForm = ({ product }) => {
                     setSkinConcerns((prev) =>
                       e.target.checked
                         ? [...prev, opt.value]
-                        : prev.filter((v) => v !== opt.value)
+                        : prev.filter((v) => v !== opt.value),
                     )
                   }
                 />
@@ -310,7 +335,10 @@ const ProductForm = ({ product }) => {
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Product Images
           </label>
-          <div {...getRootProps()} className="flex items-center justify-center w-full">
+          <div
+            {...getRootProps()}
+            className="flex items-center justify-center w-full"
+          >
             <div className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 transition hover:bg-slate-100">
               <div className="flex flex-col items-center justify-center py-10 text-slate-500">
                 <svg
@@ -330,7 +358,8 @@ const ProductForm = ({ product }) => {
                   />
                 </svg>
                 <p className="mb-2 text-sm text-slate-700">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
+                  <span className="font-semibold">Click to upload</span> or drag
+                  and drop
                 </p>
                 <p className="text-xs">.png, .jpg, .jpeg (Max 5MB)</p>
               </div>
@@ -338,35 +367,79 @@ const ProductForm = ({ product }) => {
             </div>
           </div>
 
-          {selectedImages.length > 0 && (
-            <div className="mt-4">
-              {selectedImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="mt-2 flex items-center gap-5 rounded-lg border border-slate-200 bg-white p-2"
-                >
-                  <Image
-                    className="h-14 w-14 object-contain"
-                    src={URL.createObjectURL(image)}
-                    width={100}
-                    alt="preview"
-                    height={100}
-                  />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-slate-800">{image.name}</h4>
-                    <span className="text-sm text-slate-500">
-                      {Math.round(image.size / 1024)} KB
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => removeImage(index)}
-                    type="button"
-                    className="cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                  >
-                    <X size={18} />
-                  </button>
+          {(existingImages.length > 0 || selectedImages.length > 0) && (
+            <div className="mt-4 space-y-3">
+              {existingImages.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold text-slate-500">
+                    Existing images
+                  </p>
+                  {existingImages.map((imagePath, index) => (
+                    <div
+                      key={`${imagePath}-${index}`}
+                      className="mt-2 flex items-center gap-5 rounded-lg border border-slate-200 bg-white p-2"
+                    >
+                      <img
+                        className="h-14 w-14 rounded object-cover"
+                        src={resolveImageUrl(imagePath)}
+                        alt={`Existing product image ${index + 1}`}
+                      />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-slate-800">
+                          Existing image {index + 1}
+                        </h4>
+                        <span className="text-sm text-slate-500 line-clamp-1">
+                          {imagePath}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeExistingImage(index)}
+                        type="button"
+                        className="cursor-pointer rounded bg-red-500 p-2 text-white hover:bg-red-600"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {selectedImages.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold text-slate-500">
+                    New images to upload
+                  </p>
+                  {selectedImages.map((image, index) => (
+                    <div
+                      key={`${image.name}-${index}`}
+                      className="mt-2 flex items-center gap-5 rounded-lg border border-slate-200 bg-white p-2"
+                    >
+                      <Image
+                        className="h-14 w-14 object-contain"
+                        src={URL.createObjectURL(image)}
+                        width={100}
+                        alt="preview"
+                        height={100}
+                      />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-slate-800">
+                          {image.name}
+                        </h4>
+                        <span className="text-sm text-slate-500">
+                          {Math.round(image.size / 1024)} KB
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeImage(index)}
+                        type="button"
+                        className="cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -394,7 +467,8 @@ const ProductForm = ({ product }) => {
             {...register("ingredients")}
           />
           <p className="mt-1.5 text-xs text-slate-400">
-            Separate each ingredient with a comma. These will be displayed as individual badges on the product page.
+            Separate each ingredient with a comma. These will be displayed as
+            individual badges on the product page.
           </p>
         </div>
       </div>
@@ -402,7 +476,7 @@ const ProductForm = ({ product }) => {
       <button
         type="submit"
         disabled={loading}
-        className="mt-6 inline-flex cursor-pointer items-center rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-hover)] disabled:opacity-50"
+        className="mt-6 inline-flex cursor-pointer items-center rounded-lg bg-(--brand-primary) px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-(--brand-primary-hover) disabled:opacity-50"
       >
         {loading ? "Saving..." : product ? "Update Product" : "Add Product"}
       </button>

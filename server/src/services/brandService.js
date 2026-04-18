@@ -1,4 +1,5 @@
 import brandModel from "../models/brandModel.js";
+import productModel from "../models/productModel.js";
 import { Op } from "sequelize";
 
 class BrandService {

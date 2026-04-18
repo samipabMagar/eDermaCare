@@ -7,16 +7,14 @@ import { productService } from "@/services/productService";
 import { PRODUCT_ROUTE } from "@/constants/routes";
 import { resolveImageUrl } from "@/utils/products/productCardHelpers";
 
-const MAX_BRANDS = 8;
-
 const BrandAvatar = ({ name, logoUrl, size = "lg" }) => {
   const [imgError, setImgError] = useState(false);
   const initial = name?.charAt(0)?.toUpperCase() || "B";
   const resolved = resolveImageUrl(logoUrl);
   const sizeClass =
     size === "lg"
-      ? "h-14 w-14 text-xl rounded-2xl"
-      : "h-16 w-16 text-lg rounded-full";
+      ? "h-16 w-16 text-xl rounded-2xl"
+      : "h-18 w-18 text-lg rounded-full";
 
   if (!resolved || imgError) {
     return (
@@ -64,7 +62,7 @@ const BrandTicker = ({ brands }) => {
                 logoUrl={brand.logo_url}
                 size="sm"
               />
-             
+
               <span className="absolute inset-0 rounded-full ring-0 ring-[#2FA4A9]/40 transition-all group-hover:ring-2" />
             </div>
             {/* Brand name label */}
@@ -90,8 +88,7 @@ const HomeBrands = () => {
         if (!isMounted) return;
         const visible = response
           .filter((b) => b.is_active !== false)
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .slice(0, MAX_BRANDS);
+          .sort((a, b) => a.name.localeCompare(b.name));
         setBrands(visible);
       } catch {
         if (isMounted) setBrands([]);

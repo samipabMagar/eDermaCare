@@ -110,6 +110,31 @@ class ProductController {
     try {
       const productId = req.params.id;
       const updateData = req.body;
+      const hasRetainedImagesField = Object.prototype.hasOwnProperty.call(
+        updateData,
+        "retained_images",
+      );
+
+      const retainedImages = Array.isArray(updateData.retained_images)
+        ? updateData.retained_images
+        : [];
+
+      // This is a transient form field, not a DB column.
+      delete updateData.retained_images;
+
+      const uploadedImages =
+        req.files && req.files.length > 0
+          ? req.files.map((file) => {
+              const normalizedPath = file.path.replace(/\\/g, "/");
+              return normalizedPath.replace(/^\.\.\//, "");
+            })
+          : [];
+
+      if (Array.isArray(updateData.images) && updateData.images.length > 0) {
+        updateData.images = [...updateData.images, ...uploadedImages];
+      } else if (hasRetainedImagesField || uploadedImages.length > 0) {
+        updateData.images = [...retainedImages, ...uploadedImages];
+      }
 
       const updatedProduct = await productService.updateProduct(
         productId,
