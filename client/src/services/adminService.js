@@ -312,4 +312,37 @@ export const adminService = {
       );
     }
   },
+
+  // Transaction Management
+  async getAdminTransactions(filters = {}) {
+    try {
+      const params = {};
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.paymentStatus) params.paymentStatus = filters.paymentStatus;
+      if (filters.search) params.search = filters.search;
+
+      const response = await api.get("/transactions", { params });
+
+      return {
+        data: response.data?.data ?? [],
+        pagination: response.data?.pagination ?? null,
+      };
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to fetch transactions"),
+      );
+    }
+  },
+
+  async getTransactionStats() {
+    try {
+      const response = await api.get("/transactions/stats/overview");
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to fetch transaction stats"),
+      );
+    }
+  },
 };

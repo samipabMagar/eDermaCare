@@ -83,9 +83,9 @@ const AdminSidebar = () => {
     },
     {
       label: "Transactions",
-      href: null,
+      href: ROUTES.ADMIN_TRANSACTIONS,
       icon: CreditCard,
-      match: "exact",
+      match: "startsWith",
     },
     {
       label: "Settings",

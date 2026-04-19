@@ -10,6 +10,7 @@ import paymentRoutes from "./paymentRoutes.js";
 import chatRoutes from "./chatRoutes.js";
 import treatmentRoutes from "./treatmentRoutes.js";
 import contactRoutes from "./contactRoutes.js";
+import transactionRoutes from "./transactionRoutes.js";
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use("/payments", paymentRoutes);
 router.use("/chat", chatRoutes);
 router.use("/treatments", treatmentRoutes);
 router.use("/contact", contactRoutes);
+router.use("/transactions", transactionRoutes);
 
 export default router;
