@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
-  Stethoscope,
   User,
   Users,
 } from "lucide-react";
@@ -35,8 +34,11 @@ const DoctorSidebar = ({ currentUser }) => {
       href: ROUTES.DOCTOR_APPOINTMENTS,
       icon: CalendarDays,
     },
-    { label: "Treatments", icon: Stethoscope, comingSoon: true },
-    { label: "My Patients", icon: Users, comingSoon: true },
+    {
+      label: "My Patients",
+      href: ROUTES.DOCTOR_PATIENTS,
+      icon: Users,
+    },
   ];
 
   const otherItems = [
