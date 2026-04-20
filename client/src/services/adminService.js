@@ -47,9 +47,14 @@ export const adminService = {
       const params = {};
       if (filters.search) params.search = filters.search;
       if (filters.category) params.category = filters.category;
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
 
       const response = await api.get("/products", { params });
-      return response.data?.data ?? [];
+      return {
+        products: response.data?.data ?? [],
+        pagination: response.data?.pagination ?? null,
+      };
     } catch (error) {
       throw new Error(getApiErrorMessage(error, "Failed to fetch products"));
     }

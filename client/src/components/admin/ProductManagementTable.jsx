@@ -19,6 +19,9 @@ const ProductManagementTable = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [brand, setBrand] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [pagination, setPagination] = useState(null);
   const [deleteModal, setDeleteModal] = useState({
     show: false,
     product: null,
@@ -26,18 +29,45 @@ const ProductManagementTable = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [page, category, brand]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await adminService.getProducts();
+      const { products: data, pagination: paginationData } =
+        await adminService.getProducts({
+          page,
+          limit,
+          category: category || undefined,
+          search: search || undefined,
+        });
       setProducts(data);
+      setPagination(paginationData);
     } catch (error) {
       toast.error(error.message || "Failed to load products");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setPage(1);
+  };
+
+  const handleBrandChange = (e) => {
+    setBrand(e.target.value);
+    setPage(1);
+  };
+
+  const handleSearch = async () => {
+    setPage(1);
+    await fetchProducts();
   };
 
   const categories = useMemo(() => {
@@ -63,20 +93,6 @@ const ProductManagementTable = () => {
 
     return Array.from(uniqueBrands, ([brandId, name]) => ({ brandId, name }));
   }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((item) => {
-      const bySearch =
-        !search ||
-        item.name?.toLowerCase().includes(search.toLowerCase()) ||
-        item.brand?.name?.toLowerCase().includes(search.toLowerCase());
-
-      const byCategory = !category || item.category === category;
-      const byBrand = !brand || String(item.brand?.brand_id) === brand;
-
-      return bySearch && byCategory && byBrand;
-    });
-  }, [products, search, category, brand]);
 
   const confirmDelete = (product) => {
     setDeleteModal({ show: true, product });
@@ -120,7 +136,18 @@ const ProductManagementTable = () => {
             Products Directory
           </h3>
           <p className="text-xs text-slate-600">
-            Total records: {filteredProducts.length}
+            {pagination ? (
+              <>
+                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(
+                  pagination.page * pagination.limit,
+                  pagination.totalItems,
+                )}{" "}
+                of {pagination.totalItems} products
+              </>
+            ) : (
+              <>Total records: {products.length}</>
+            )}
           </p>
         </div>
       </div>
@@ -133,7 +160,8 @@ const ProductManagementTable = () => {
               type="text"
               placeholder="Search by product name or brand..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-4 text-sm text-slate-800 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
             />
           </div>
@@ -141,7 +169,7 @@ const ProductManagementTable = () => {
 
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={handleCategoryChange}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
         >
           <option value="">All Categories</option>
@@ -154,7 +182,7 @@ const ProductManagementTable = () => {
 
         <select
           value={brand}
-          onChange={(e) => setBrand(e.target.value)}
+          onChange={handleBrandChange}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
         >
           <option value="">All Brands</option>
@@ -185,7 +213,7 @@ const ProductManagementTable = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length === 0 ? (
+            {products.length === 0 ? (
               <tr>
                 <td
                   colSpan="6"
@@ -195,7 +223,7 @@ const ProductManagementTable = () => {
                 </td>
               </tr>
             ) : (
-              filteredProducts.map((product) => {
+              products.map((product) => {
                 const imagePath = getFirstImagePath(product.images);
                 const imageUrl = resolveImageUrl(imagePath);
 
@@ -274,6 +302,30 @@ const ProductManagementTable = () => {
           </tbody>
         </table>
       </div>
+
+      {pagination && (
+        <div className="mt-4 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/70 px-4 py-3">
+          <p className="text-xs text-slate-600">
+            Page {pagination.page} of {pagination.totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(page - 1)}
+              disabled={!pagination.hasPrevPage || loading}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-100"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage(page + 1)}
+              disabled={!pagination.hasNextPage || loading}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-100"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         isOpen={deleteModal.show}
