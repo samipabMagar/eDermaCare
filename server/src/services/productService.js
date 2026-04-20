@@ -185,6 +185,19 @@ class ProductService {
     return related;
   }
 
+  async getAllBrands() {
+    try {
+      const brands = await brandModel.findAll({
+        attributes: ["brand_id", "name", "logo_url"],
+        order: [["name", "ASC"]],
+      });
+
+      return brands;
+    } catch (error) {
+      throw new Error("Failed to fetch brands");
+    }
+  }
+
   async deleteProduct(productId) {
     const product = await productModel.findByPk(productId);
 

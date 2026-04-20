@@ -28,6 +28,7 @@ const optionalProductImagesUpload = (req, res, next) => {
 
 // PUBLIC ROUTES - Anyone can view products
 router.get("/", productController.getAllProducts);
+router.get("/brands", productController.getAllBrands);
 router.get("/:id/related", productController.getRelatedProducts);
 router.get("/:id", productController.getProductById);
 

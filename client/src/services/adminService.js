@@ -47,6 +47,7 @@ export const adminService = {
       const params = {};
       if (filters.search) params.search = filters.search;
       if (filters.category) params.category = filters.category;
+      if (filters.brandId) params.brandId = filters.brandId;
       if (filters.page) params.page = filters.page;
       if (filters.limit) params.limit = filters.limit;
 

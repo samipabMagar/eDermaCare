@@ -172,6 +172,24 @@ class ProductController {
       });
     }
   }
+
+  // Get all available brands
+  async getAllBrands(req, res) {
+    try {
+      const brands = await productService.getAllBrands();
+
+      return res.status(200).json({
+        success: true,
+        message: "Brands retrieved successfully",
+        data: brands,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Failed to retrieve brands",
+      });
+    }
+  }
 }
 
 export default new ProductController();

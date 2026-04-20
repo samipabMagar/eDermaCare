@@ -14,7 +14,9 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const ProductManagementTable = () => {
   const [products, setProducts] = useState([]);
+  const [allBrands, setAllBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [brandsLoading, setBrandsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -28,8 +30,21 @@ const ProductManagementTable = () => {
   });
 
   useEffect(() => {
+    fetchAllBrands();
     fetchProducts();
   }, [page, category, brand]);
+
+  const fetchAllBrands = async () => {
+    try {
+      setBrandsLoading(true);
+      const brandsData = await adminService.getBrands();
+      setAllBrands(brandsData);
+    } catch (error) {
+      toast.error(error.message || "Failed to load brands");
+    } finally {
+      setBrandsLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -39,6 +54,7 @@ const ProductManagementTable = () => {
           page,
           limit,
           category: category || undefined,
+          brandId: brand || undefined,
           search: search || undefined,
         });
       setProducts(data);
@@ -75,23 +91,6 @@ const ProductManagementTable = () => {
       products.map((item) => item.category).filter(Boolean),
     );
     return Array.from(unique);
-  }, [products]);
-
-  const brands = useMemo(() => {
-    const uniqueBrands = new Map();
-
-    products.forEach((item) => {
-      const brandId = item.brand?.brand_id;
-      const brandName = item.brand?.name;
-
-      if (!brandId || !brandName || uniqueBrands.has(brandId)) {
-        return;
-      }
-
-      uniqueBrands.set(brandId, brandName);
-    });
-
-    return Array.from(uniqueBrands, ([brandId, name]) => ({ brandId, name }));
   }, [products]);
 
   const confirmDelete = (product) => {
@@ -183,11 +182,14 @@ const ProductManagementTable = () => {
         <select
           value={brand}
           onChange={handleBrandChange}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft)"
+          disabled={brandsLoading}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 outline-none focus:border-(--brand-primary) focus:ring-2 focus:ring-(--brand-primary-soft) disabled:opacity-50"
         >
-          <option value="">All Brands</option>
-          {brands.map((item) => (
-            <option key={item.brandId} value={String(item.brandId)}>
+          <option value="">
+            {brandsLoading ? "Loading brands..." : "All Brands"}
+          </option>
+          {allBrands.map((item) => (
+            <option key={item.brand_id} value={String(item.brand_id)}>
               {item.name}
             </option>
           ))}
