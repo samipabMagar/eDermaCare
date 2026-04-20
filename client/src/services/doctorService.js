@@ -76,6 +76,17 @@ export const doctorService = {
     }
   },
 
+  async getDoctorByUserId(userId) {
+    try {
+      const response = await api.get(`/doctors/${userId}`);
+      return response.data?.data;
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to load doctor details"),
+      );
+    }
+  },
+
   // Get logged-in doctor's profile
   async getDoctorProfile() {
     try {

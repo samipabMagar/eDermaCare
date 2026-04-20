@@ -8,6 +8,7 @@ import {
   Phone,
   Users,
 } from "lucide-react";
+import { DOCTORS_ROUTE } from "@/constants/routes";
 
 const resolveProfileImageUrl = (profileImagePath) => {
   if (!profileImagePath) return null;
@@ -79,6 +80,9 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
   const profileImageUrl = resolveProfileImageUrl(doctor.user?.profile_image);
   const doctorName = doctor.user?.full_name || "Doctor";
   const doctorId = doctor.user?.user_id;
+  const doctorDetailsHref = doctorId
+    ? `${DOCTORS_ROUTE}/${doctorId}`
+    : DOCTORS_ROUTE;
   const tagList = getTags(doctor.specialization);
   const educationLabel = formatEducationLabel(doctor.education);
 
@@ -117,7 +121,14 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
       </div>
 
       <div className="p-5 pt-3">
-        <h2 className="text-base font-bold text-slate-900">Dr. {doctorName}</h2>
+        <h2 className="text-base font-bold text-slate-900">
+          <Link
+            href={doctorDetailsHref}
+            className="transition hover:text-teal-700"
+          >
+            Dr. {doctorName}
+          </Link>
+        </h2>
         <p className="mt-0.5 text-xs font-semibold text-teal-700">
           {doctor.specialization || "Dermatology Specialist"}
         </p>
@@ -192,10 +203,10 @@ const DoctorCard = ({ doctor, onBookAppointment }) => {
 
         <div className="mt-4 flex gap-2">
           <Link
-            href={doctor.user?.email ? `mailto:${doctor.user.email}` : "#"}
+            href={doctorDetailsHref}
             className="inline-flex h-9 flex-1 items-center justify-center rounded-lg border border-slate-200 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
           >
-            Contact
+            View Profile
           </Link>
           <button
             type="button"
