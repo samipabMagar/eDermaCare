@@ -107,6 +107,7 @@ const ProductForm = ({ product }) => {
     accept: {
       "image/jpeg": [".jpeg", ".jpg"],
       "image/png": [".png"],
+      "image/webp": [".webp"],
     },
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024,
@@ -361,7 +362,7 @@ const ProductForm = ({ product }) => {
                   <span className="font-semibold">Click to upload</span> or drag
                   and drop
                 </p>
-                <p className="text-xs">.png, .jpg, .jpeg (Max 5MB)</p>
+                <p className="text-xs">.png, .jpg, .jpeg, .webp (Max 5MB)</p>
               </div>
               <input {...getInputProps()} type="file" />
             </div>

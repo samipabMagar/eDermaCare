@@ -32,6 +32,7 @@ export const ADMIN_BRANDS_NEW_ROUTE = "/admin/brands/new";
 export const ADMIN_BRANDS_EDIT_ROUTE = "/admin/brands";
 export const ADMIN_PENDING_DOCTORS_ROUTE = "/admin/doctors/pending";
 export const ADMIN_ALL_DOCTORS_ROUTE = "/admin/doctors";
+export const ADMIN_APPOINTMENTS_ROUTE = "/admin/appointments";
 export const ADMIN_TREATMENTS_ROUTE = "/admin/treatments";
 export const ADMIN_TRANSACTIONS_ROUTE = "/admin/transactions";
 export const ADMIN_PROFILE_ROUTE = "/admin/profile";
@@ -70,6 +71,7 @@ export const ROUTES = {
   ADMIN_BRANDS_EDIT: ADMIN_BRANDS_EDIT_ROUTE,
   ADMIN_PENDING_DOCTORS: ADMIN_PENDING_DOCTORS_ROUTE,
   ADMIN_ALL_DOCTORS: ADMIN_ALL_DOCTORS_ROUTE,
+  ADMIN_APPOINTMENTS: ADMIN_APPOINTMENTS_ROUTE,
   ADMIN_TREATMENTS: ADMIN_TREATMENTS_ROUTE,
   ADMIN_TRANSACTIONS: ADMIN_TRANSACTIONS_ROUTE,
   ADMIN_PROFILE: ADMIN_PROFILE_ROUTE,

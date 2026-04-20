@@ -72,6 +72,12 @@ const AdminSidebar = () => {
       icon: ShoppingBag,
       match: "startsWith",
     },
+    {
+      label: "Appointments",
+      href: ROUTES.ADMIN_APPOINTMENTS,
+      icon: Stethoscope,
+      match: "startsWith",
+    },
   ];
 
   const otherItems = [
