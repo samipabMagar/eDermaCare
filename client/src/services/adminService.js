@@ -229,6 +229,41 @@ export const adminService = {
     }
   },
 
+  // Admin Appointment Management
+  async getAdminAppointments(filters = {}) {
+    try {
+      const params = {};
+
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.status) params.status = filters.status;
+      if (filters.doctor_user_id)
+        params.doctor_user_id = filters.doctor_user_id;
+      if (filters.patient_user_id)
+        params.patient_user_id = filters.patient_user_id;
+      if (filters.doctor) params.doctor = filters.doctor;
+      if (filters.patient) params.patient = filters.patient;
+      if (filters.from) params.from = filters.from;
+      if (filters.to) params.to = filters.to;
+      if (filters.created_from) params.created_from = filters.created_from;
+      if (filters.created_to) params.created_to = filters.created_to;
+      if (filters.search) params.search = filters.search;
+      if (filters.sortBy) params.sortBy = filters.sortBy;
+      if (filters.sortOrder) params.sortOrder = filters.sortOrder;
+
+      const response = await api.get("/appointments", { params });
+
+      return {
+        appointments: response.data?.data?.appointments ?? [],
+        pagination: response.data?.data?.meta ?? null,
+      };
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, "Failed to fetch appointments"),
+      );
+    }
+  },
+
   // Treatment Management
   async getTreatments(filters = {}) {
     try {

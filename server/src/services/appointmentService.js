@@ -415,9 +415,15 @@ class AppointmentService {
     const {
       status,
       doctor_user_id,
+      doctor,
       patient_user_id,
+      patient,
+      meeting_provider,
+      cancelled_by,
       from,
       to,
+      created_from,
+      created_to,
       search,
       sortBy = "scheduled_at",
       sortOrder = "DESC",
@@ -431,35 +437,115 @@ class AppointmentService {
 
     const whereClause = {};
 
-    if (status) {
-      whereClause.status = status;
+    const normalizedStatuses = String(status || "")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (normalizedStatuses.length === 1) {
+      whereClause.status = normalizedStatuses[0];
+    }
+
+    if (normalizedStatuses.length > 1) {
+      whereClause.status = {
+        [Op.in]: normalizedStatuses,
+      };
     }
 
     if (doctor_user_id) {
-      whereClause.doctor_user_id = Number(doctor_user_id);
+      const doctorUserId = Number(doctor_user_id);
+      if (!Number.isNaN(doctorUserId) && doctorUserId > 0) {
+        whereClause.doctor_user_id = doctorUserId;
+      }
     }
 
     if (patient_user_id) {
-      whereClause.patient_user_id = Number(patient_user_id);
+      const patientUserId = Number(patient_user_id);
+      if (!Number.isNaN(patientUserId) && patientUserId > 0) {
+        whereClause.patient_user_id = patientUserId;
+      }
+    }
+
+    if (meeting_provider) {
+      whereClause.meeting_provider = String(meeting_provider).trim();
+    }
+
+    if (cancelled_by) {
+      whereClause.cancelled_by = String(cancelled_by).trim();
     }
 
     if (from || to) {
       whereClause.scheduled_at = {};
 
       if (from) {
-        whereClause.scheduled_at[Op.gte] = new Date(from);
+        const fromDate = new Date(from);
+        if (!Number.isNaN(fromDate.getTime())) {
+          whereClause.scheduled_at[Op.gte] = fromDate;
+        }
       }
       if (to) {
-        whereClause.scheduled_at[Op.lte] = new Date(to);
+        const toDate = new Date(to);
+        if (!Number.isNaN(toDate.getTime())) {
+          whereClause.scheduled_at[Op.lte] = toDate;
+        }
+      }
+
+      if (!Object.keys(whereClause.scheduled_at).length) {
+        delete whereClause.scheduled_at;
       }
     }
 
+    if (created_from || created_to) {
+      whereClause.created_at = {};
+
+      if (created_from) {
+        const createdFromDate = new Date(created_from);
+        if (!Number.isNaN(createdFromDate.getTime())) {
+          whereClause.created_at[Op.gte] = createdFromDate;
+        }
+      }
+
+      if (created_to) {
+        const createdToDate = new Date(created_to);
+        if (!Number.isNaN(createdToDate.getTime())) {
+          whereClause.created_at[Op.lte] = createdToDate;
+        }
+      }
+
+      if (!Object.keys(whereClause.created_at).length) {
+        delete whereClause.created_at;
+      }
+    }
+
+    const includeDoctorWhere = {};
+    const includePatientWhere = {};
+
+    const applyPersonFilter = (rawValue, targetWhere) => {
+      const value = String(rawValue || "").trim();
+      if (!value) return;
+
+      const numericValue = Number(value);
+      if (!Number.isNaN(numericValue) && numericValue > 0) {
+        targetWhere.user_id = numericValue;
+        return;
+      }
+
+      targetWhere[Op.or] = [
+        { full_name: { [Op.like]: `%${value}%` } },
+        { email: { [Op.like]: `%${value}%` } },
+      ];
+    };
+
+    applyPersonFilter(doctor, includeDoctorWhere);
+    applyPersonFilter(patient, includePatientWhere);
+
     if (search) {
+      const safeSearch = String(search).trim();
       whereClause[Op.or] = [
-        { "$patient.full_name$": { [Op.like]: `%${search}%` } },
-        { "$patient.email$": { [Op.like]: `%${search}%` } },
-        { "$doctor.full_name$": { [Op.like]: `%${search}%` } },
-        { "$doctor.email$": { [Op.like]: `%${search}%` } },
+        { "$patient.full_name$": { [Op.like]: `%${safeSearch}%` } },
+        { "$patient.email$": { [Op.like]: `%${safeSearch}%` } },
+        { "$doctor.full_name$": { [Op.like]: `%${safeSearch}%` } },
+        { "$doctor.email$": { [Op.like]: `%${safeSearch}%` } },
       ];
     }
 
@@ -468,6 +554,7 @@ class AppointmentService {
       "created_at",
       "updated_at",
       "status",
+      "cancelled_at",
     ];
     const safeSortBy = allowedSortFields.includes(sortBy)
       ? sortBy
@@ -481,20 +568,27 @@ class AppointmentService {
           model: userModel,
           as: "patient",
           attributes: ["user_id", "full_name", "email"],
+          ...(Object.keys(includePatientWhere).length
+            ? { where: includePatientWhere, required: true }
+            : {}),
         },
         {
           model: userModel,
           as: "doctor",
           attributes: ["user_id", "full_name", "email"],
+          ...(Object.keys(includeDoctorWhere).length
+            ? { where: includeDoctorWhere, required: true }
+            : {}),
         },
       ],
       order: [[safeSortBy, safeSortOrder]],
       limit: safeLimit,
       offset,
       distinct: true,
+      subQuery: false,
     });
 
-    const total = result.count;
+    const total = Number(result.count || 0);
     const totalPages = Math.ceil(total / safeLimit) || 1;
 
     return {
@@ -504,6 +598,8 @@ class AppointmentService {
         limit: safeLimit,
         total,
         totalPages,
+        hasNextPage: safePage < totalPages,
+        hasPrevPage: safePage > 1,
       },
     };
   }
