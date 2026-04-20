@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, Save, Search, ShoppingBag } from "lucide-react";
 import { toast } from "react-toastify";
 import { adminService } from "@/services/adminService";
+import OrderDetailsModal from "@/components/ui/OrderDetailsModal";
 
 const PAGE_SIZE = 10;
 
@@ -81,6 +82,7 @@ const OrderManagementTable = () => {
   const [page, setPage] = useState(1);
   const [statusDrafts, setStatusDrafts] = useState({});
   const [savingOrderId, setSavingOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -315,11 +317,21 @@ const OrderManagementTable = () => {
                     </td>
 
                     <td className="px-4 py-4 text-slate-700">
-                      User #{order.user_id}
+                      <div className="font-medium text-slate-900">
+                        {order.user_name || `User #${order.user_id}`}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        ID: {order.user_id}
+                      </div>
                     </td>
 
-                    <td className="px-4 py-4 text-slate-700">
-                      {order.items?.length || 0}
+                    <td className="px-4 py-4 text-slate-700 max-w-[200px]">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="text-sm rounded-lg px-3 py-1.5 font-medium text-(--brand-primary) bg-(--brand-primary-soft) hover:bg-(--brand-primary) hover:text-white transition"
+                      >
+                        View Details
+                      </button>
                     </td>
 
                     <td className="px-4 py-4">
@@ -413,6 +425,12 @@ const OrderManagementTable = () => {
           </div>
         </div>
       ) : null}
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </div>
   );
 };

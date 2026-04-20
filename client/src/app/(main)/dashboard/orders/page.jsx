@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, ShoppingBag } from "lucide-react";
 import { toast } from "react-toastify";
 import { orderService } from "@/services/orderService";
+import OrderDetailsModal from "@/components/ui/OrderDetailsModal";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+
+const ITEMS_PER_PAGE = 5;
 
 const tabs = [
   "All",
@@ -31,6 +35,14 @@ export default function DashboardOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [page, setPage] = useState(1);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search]);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -65,6 +77,35 @@ export default function DashboardOrdersPage() {
       return statusMatch && searchMatch;
     });
   }, [activeTab, orders, search]);
+
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = filteredOrders.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel) return;
+    try {
+      setIsCancelling(true);
+      await orderService.cancelOrder(orderToCancel.order_id, {
+        reason: "Cancelled by user",
+      });
+      toast.success("Order cancelled successfully");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.order_id === orderToCancel.order_id
+            ? { ...o, status: "cancelled" }
+            : o
+        )
+      );
+    } catch (error) {
+      toast.error(error.message || "Failed to cancel order");
+    } finally {
+      setIsCancelling(false);
+      setOrderToCancel(null);
+    }
+  };
 
   if (isLoading) {
     return <p className="p-6 text-sm text-slate-500">Loading orders...</p>;
@@ -108,7 +149,7 @@ export default function DashboardOrdersPage() {
       </div>
 
       <div className="space-y-3">
-        {filteredOrders.map((order) => {
+        {paginatedOrders.map((order) => {
           const normalizedStatus = String(order.status || "").toLowerCase();
           const badgeClass =
             statusClasses[normalizedStatus] || statusClasses.pending;
@@ -134,22 +175,30 @@ export default function DashboardOrdersPage() {
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600">
-                      {order.items
-                        ?.map((item) => item.product_name)
-                        .slice(0, 2)
-                        .join(", ") || "Items"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {new Date(order.created_at).toLocaleDateString()} ·{" "}
-                      {order.summary?.item_count || 0} item(s)
-                    </p>
+                    <div className="mt-2">
+                       <button
+                         onClick={() => setSelectedOrder(order)}
+                         className="text-sm rounded-lg px-4 py-2 font-medium text-[#0F9EA5] bg-[#0F9EA5]/10 hover:bg-[#0F9EA5] hover:text-white transition"
+                       >
+                         View Details
+                       </button>
+                    </div>
                   </div>
                 </div>
 
-                <p className="text-lg font-bold text-slate-900">
-                  {formatCurrency(order.summary?.grand_total)}
-                </p>
+                <div className="flex flex-col items-end gap-2 mt-4 sm:mt-0">
+                  <p className="text-lg font-bold text-slate-900">
+                    {formatCurrency(order.summary?.grand_total)}
+                  </p>
+                  {normalizedStatus === "pending" && (
+                    <button
+                      onClick={() => setOrderToCancel(order)}
+                      className="text-xs font-semibold text-rose-500 hover:text-rose-600 transition"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
               </div>
             </article>
           );
@@ -163,6 +212,46 @@ export default function DashboardOrdersPage() {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+          <p>
+            Page {page} of {totalPages} • {filteredOrders.length} total orders
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
+
+      <ConfirmModal
+        isOpen={!!orderToCancel}
+        title="Cancel Order"
+        message={`Are you sure you want to cancel order ${orderToCancel?.order_number}? This action cannot be undone.`}
+        confirmText="Cancel Order"
+        isLoading={isCancelling}
+        onConfirm={handleCancelOrder}
+        onCancel={() => setOrderToCancel(null)}
+      />
     </div>
   );
 }

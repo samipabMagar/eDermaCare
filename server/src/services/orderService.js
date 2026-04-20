@@ -5,6 +5,7 @@ import cartItemModel from "../models/cartItemModel.js";
 import productModel from "../models/productModel.js";
 import orderModel from "../models/orderModel.js";
 import orderItemModel from "../models/orderItemModel.js";
+import userModel from "../models/userModel.js";
 
 const ORDER_STATUSES = new Set([
   "pending",
@@ -45,6 +46,7 @@ class OrderService {
       order_id: order.order_id,
       order_number: order.order_number,
       user_id: order.user_id,
+      user_name: order.user?.full_name || null,
       status: order.status,
       payment_status: order.payment_status,
       payment_method: order.payment_method,
@@ -336,6 +338,11 @@ class OrderService {
         {
           model: orderItemModel,
           as: "items",
+        },
+        {
+          model: userModel,
+          as: "user",
+          attributes: ["user_id", "full_name", "email", "phone"],
         },
       ],
       order: [["created_at", "DESC"]],

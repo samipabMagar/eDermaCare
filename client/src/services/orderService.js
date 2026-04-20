@@ -26,4 +26,13 @@ export const orderService = {
       throw new Error(getApiErrorMessage(error, "Failed to place order"));
     }
   },
+
+  async cancelOrder(orderId, payload = {}) {
+    try {
+      const response = await api.patch(`/orders/${orderId}/cancel`, payload);
+      return response.data?.data ?? null;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, "Failed to cancel order"));
+    }
+  },
 };

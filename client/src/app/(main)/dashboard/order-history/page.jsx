@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { orderService } from "@/services/orderService";
+import OrderDetailsModal from "@/components/ui/OrderDetailsModal";
+
+const ITEMS_PER_PAGE = 8;
 
 const formatCurrency = (value) => `NPR ${Number(value || 0).toLocaleString()}`;
 
@@ -17,6 +20,8 @@ const statusClassFor = (status) => {
 export default function DashboardOrderHistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -40,6 +45,12 @@ export default function DashboardOrderHistoryPage() {
       return ["delivered", "returned", "cancelled"].includes(key);
     });
   }, [orders]);
+
+  const totalPages = Math.ceil(historyRows.length / ITEMS_PER_PAGE);
+  const paginatedRows = historyRows.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
 
   if (isLoading) {
     return (
@@ -69,14 +80,18 @@ export default function DashboardOrderHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {historyRows.map((order) => (
+              {paginatedRows.map((order) => (
                 <tr key={order.order_id} className="hover:bg-slate-50">
                   <td className="px-5 py-4 text-sm font-semibold text-slate-900">
                     {order.order_number}
                   </td>
-                  <td className="max-w-[260px] truncate px-5 py-4 text-sm text-slate-600">
-                    {order.items?.map((item) => item.product_name).join(", ") ||
-                      "Items"}
+                  <td className="max-w-[150px] px-5 py-4">
+                     <button
+                       onClick={() => setSelectedOrder(order)}
+                       className="text-xs rounded-lg px-3 py-1.5 font-medium text-[#0F9EA5] bg-[#0F9EA5]/10 hover:bg-[#0F9EA5] hover:text-white transition"
+                     >
+                       View Details
+                     </button>
                   </td>
                   <td className="px-5 py-4 text-sm text-slate-600">
                     {new Date(order.created_at).toLocaleDateString()}
@@ -105,6 +120,36 @@ export default function DashboardOrderHistoryPage() {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+          <p>
+            Page {page} of {totalPages} • {historyRows.length} total orders
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </div>
   );
 }

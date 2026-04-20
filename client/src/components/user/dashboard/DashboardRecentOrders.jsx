@@ -1,4 +1,6 @@
-import { ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import { ShoppingBag, ChevronRight } from "lucide-react";
+import OrderDetailsModal from "@/components/ui/OrderDetailsModal";
 
 const statusClasses = {
   delivered: "border-green-200 bg-green-50 text-green-700",
@@ -22,6 +24,8 @@ const formatDate = (value) => {
 const formatCurrency = (value) => `NPR ${Number(value || 0).toLocaleString()}`;
 
 const DashboardRecentOrders = ({ orders }) => {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
       <header className="flex items-center justify-between border-b border-slate-200 p-5">
@@ -54,30 +58,45 @@ const DashboardRecentOrders = ({ orders }) => {
                     <ShoppingBag className="h-4 w-4 text-slate-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">
-                      {firstItemName}
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                       {order.order_number}
                     </p>
-                    <p className="text-xs text-slate-500">
-                      {order.order_number} · {formatDate(order.created_at)}
+                    <p className="text-xs text-slate-500 mt-0.5">
+                       {formatDate(order.created_at)} · {order.summary?.item_count || 0} items
                     </p>
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-3">
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass}`}
+                <div className="flex shrink-0 items-center justify-end gap-3 min-w-[120px]">
+                  <div className="flex flex-col items-end gap-1">
+                     <span className="hidden text-sm font-semibold text-slate-900 sm:block">
+                       {formatCurrency(order.summary?.grand_total)}
+                     </span>
+                     <span
+                       className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${badgeClass}`}
+                     >
+                       {order.status}
+                     </span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedOrder(order)}
+                    className="p-1.5 text-slate-400 hover:text-(--brand-primary) hover:bg-(--brand-primary-soft) rounded-lg transition"
+                    title="View Details"
                   >
-                    {order.status}
-                  </span>
-                  <span className="hidden text-sm font-semibold text-slate-900 sm:block">
-                    {formatCurrency(order.summary?.grand_total)}
-                  </span>
+                     <ChevronRight className="h-5 w-5" />
+                  </button>
                 </div>
               </article>
             );
           })}
         </div>
       )}
+      
+      <OrderDetailsModal 
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </section>
   );
 };
