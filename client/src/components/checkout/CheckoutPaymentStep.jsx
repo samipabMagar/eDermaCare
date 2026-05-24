@@ -11,12 +11,12 @@ const paymentOptions = [
     description: "Pay online with Khalti",
     enabled: true,
   },
-  {
-    value: "esewa",
-    label: "eSewa",
-    description: "Pay online with eSewa",
-    enabled: true,
-  },
+  // {
+  //   value: "esewa",
+  //   label: "eSewa",
+  //   description: "Pay online with eSewa",
+  //   enabled: true,
+  // },
   //   {
   //     value: "stripe",
   //     label: "Stripe (Coming soon)",

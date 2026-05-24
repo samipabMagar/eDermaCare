@@ -15,7 +15,7 @@ const RegisterCommonFields = ({ register, errors }) => {
           required
           {...register("full_name")}
           error={errors.full_name?.message}
-          placeholder="John Doe"
+          placeholder="Sanjay Gurung"
         />
 
         <Input
@@ -26,7 +26,7 @@ const RegisterCommonFields = ({ register, errors }) => {
           required
           {...register("email")}
           error={errors.email?.message}
-          placeholder="you@example.com"
+          placeholder="sanjay@gmail.com"
         />
       </div>
 
@@ -59,7 +59,7 @@ const RegisterCommonFields = ({ register, errors }) => {
           required
           {...register("phone")}
           error={errors.phone?.message}
-          placeholder="(123) 456-7890"
+          placeholder="9878798787"
         />
 
         <Select

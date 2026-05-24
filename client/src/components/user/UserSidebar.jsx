@@ -33,11 +33,11 @@ const mainItems = [
     href: ROUTES.USER_DASHBOARD_TREATMENTS,
     icon: Calendar,
   },
-  {
-    label: "Order History",
-    href: ROUTES.USER_DASHBOARD_ORDER_HISTORY,
-    icon: ShoppingBag,
-  },
+  // {
+  //   label: "Order History",
+  //   href: ROUTES.USER_DASHBOARD_ORDER_HISTORY,
+  //   icon: ShoppingBag,
+  // },
   {
     label: "Payment History",
     href: ROUTES.USER_DASHBOARD_PAYMENTS,
